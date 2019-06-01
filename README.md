@@ -7,4 +7,5 @@ This is very weak obfuscation but since UTMT is still in early dev. Scripts will
 And so I hope this repo will as well.
 
 ## Download
-[https://github.com/KadePcGames/Kades-Obfuscater-UTMT-SCRIPT/releases/latest](Download it here)
+Download it here: 
+https://github.com/KadePcGames/Kades-Obfuscater-UTMT-SCRIPT/releases/latest
