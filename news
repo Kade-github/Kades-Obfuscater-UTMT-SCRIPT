@@ -1,3 +1,5 @@
-! / FIRST RELEASE! \ !
-Welcome to the very first stages of Kades Obfuscator,
-we hope you enjoy!
+! / 1.1 Release \ !
++ Added more methods
++ Obfuscating scripts
+- Removed GMS Support (Going to re-add it if possible)
++ Cleaned code a bit.
