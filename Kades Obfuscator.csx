@@ -83,24 +83,6 @@ foreach (UndertaleRoom obj in Data.Rooms)
     obj.Name.Content = result.ToString();
 }
 
-MessageBox.Show("Obfuscating SCRIPT NAMES/FUNCTION/VARIABLE NAMES","Kades Obfuscator");
-foreach (UndertaleScript obj in Data.Scripts)
-{
-    char[] chars =
-       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
-    byte[] data = new byte[40];
-    using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
-    {
-        crypto.GetBytes(data);
-    }
-    StringBuilder result = new StringBuilder(40);
-    foreach (byte b in data)
-    {
-        result.Append(chars[b % (chars.Length)]);
-    }
-    obj.Name.Content = result.ToString();
-}
-
 MessageBox.Show("Obfuscating OBJECTS","Kades Obfuscator");
 
 foreach (UndertaleGameObject obj in Data.GameObjects)
@@ -863,6 +845,7 @@ switch(rnd.Next(1,5))
 obj.EventHandlerFor(EventType.Step, (uint)0, Data.Strings, Data.Code, Data.CodeLocals).Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(code, null ), Data));
 }
 
+MessageBox.Show("Adding JUNK...","Kades Obfuscator");
 int i = 0;
 
 while(i != 500)
