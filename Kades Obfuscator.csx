@@ -13,7 +13,7 @@ using System.IO;
 using System.Linq;
 
 // VERSION dont change this shit
-string ver = "1.0";
+string ver = "1.1";
 
 ////////////////////////////// ADD THIS TO THE BEGINNING - COLINATOR27 //////////////////////////////
 UndertaleModLib.Compiler.Compiler.SetUndertaleData(Data);
