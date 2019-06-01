@@ -9,3 +9,7 @@ And so I hope this repo will as well.
 ## Download
 Download it here: 
 https://github.com/KadePcGames/Kades-Obfuscater-UTMT-SCRIPT/releases/latest
+
+## Credits
+- Colinator27 (Helped me a lot in the mess of things)
+- Kade (The Creator)
