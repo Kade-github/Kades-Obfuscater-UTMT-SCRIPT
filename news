@@ -1,4 +1,3 @@
-! / 1.1 Release \ !
-+ Added more methods
-- Removed GMS Support (Going to re-add it if possible)
-+ Cleaned code a bit.
+! / 1.2 Release \ !
++ Added A UI
++ Added GMS Support
