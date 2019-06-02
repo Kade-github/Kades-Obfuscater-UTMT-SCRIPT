@@ -3,6 +3,7 @@
 ///-----------------------------------------------------------------
 ///   Author:         Kade
 ///-----------------------------------------------------------------
+////////////////////////////// IMPORTS //////////////////////////////
 using System.Security.Cryptography;
 using System.Text;
 using System.Net;
@@ -10,10 +11,12 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Drawing;
+using System.Windows.Controls;
 using System.Linq;
 
 // VERSION dont change this shit
-string ver = "1.1";
+string ver = "1.2";
 
 ////////////////////////////// ADD THIS TO THE BEGINNING - COLINATOR27 //////////////////////////////
 UndertaleModLib.Compiler.Compiler.SetUndertaleData(Data);
@@ -24,11 +27,45 @@ if (!new WebClient().DownloadString("https://raw.githubusercontent.com/KadePcGam
 {
 	MessageBox.Show("Updating!","Kades Obfuscator");
 	new WebClient().DownloadFile("https://raw.githubusercontent.com/KadePcGames/Kades-Obfuscater-UTMT-SCRIPT/UTMT-Files/file","script.csx");
-	MessageBox.Show("Please run script.csx","Kades Obfuscator");
+	MessageBox.Show("Please run script.csx in the folder were this data.win is located!","Kades Obfuscator");
 }
 else
 {
-MessageBox.Show(new WebClient().DownloadString("https://raw.githubusercontent.com/KadePcGames/Kades-Obfuscater-UTMT-SCRIPT/UTMT-Files/news"), "Kades Obfuscator News");
+    // Get News //
+string news = new WebClient().DownloadString("https://raw.githubusercontent.com/KadePcGames/Kades-Obfuscater-UTMT-SCRIPT/UTMT-Files/news");
+    // Make the form //
+            Form f = new Form();
+            f.Text = "Kades Obfuscator Script UI";
+            f.FormBorderStyle = FormBorderStyle.None;
+            f.StartPosition = FormStartPosition.CenterScreen;
+            f.Size = new System.Drawing.Size(250, 150);
+            f.TopMost = true;
+            System.Windows.Forms.RichTextBox NewsBox = new System.Windows.Forms.RichTextBox();
+            System.Windows.Forms.Button Obfuscate = new System.Windows.Forms.Button();
+            System.Windows.Forms.TextBox Junk = new System.Windows.Forms.TextBox();
+            System.Windows.Forms.Label JunkText = new System.Windows.Forms.Label();
+            Obfuscate.Text = "Obfuscate!";
+            Obfuscate.Click += new EventHandler(delegate (Object o, EventArgs a)
+            {
+                f.Close();
+            });
+            JunkText.Text = "The ammount of junk:";
+            Obfuscate.FlatStyle = FlatStyle.Flat;
+            f.Controls.Add(NewsBox);
+            f.Controls.Add(JunkText);
+            f.Controls.Add(Obfuscate);
+            f.Controls.Add(Junk);
+            NewsBox.Text = news;
+            NewsBox.ReadOnly = true;
+            NewsBox.Size = new System.Drawing.Size(250, 50);
+            Junk.Size = new System.Drawing.Size(145, 50);
+            Junk.Text = "500";
+            JunkText.Size = new System.Drawing.Size(200, 20);
+            JunkText.Location = new System.Drawing.Point(55, 55);
+            Junk.Location = new System.Drawing.Point(45, 75);
+            Obfuscate.Location = new System.Drawing.Point(75, 100);
+            f.ShowDialog();
+            int ammountOfJunk = int.Parse(Junk.Text);
 MessageBox.Show("Started obfuscator.","Kades Obfuscator");
 // GMS CHECK //
 
@@ -41,13 +78,12 @@ foreach (UndertaleGameObject obj in Data.GameObjects)
 }
 
 if (gms == 1)
-	MessageBox.Show("GMS Detected! GMS Mode is in beta and is still being tested, untill then you cannot use it in Kades Obfuscator","Kades Obfuscator");
-else
-{
+	MessageBox.Show("GMS Detected!\nJust note that GMS is a little weird, the obfuscation can stop it from working.\nKeep that in mind while using it!","Kades Obfuscator");
 
 // GMS CHECK //
 
 MessageBox.Show("Obfuscating SPRITE NAMES","Kades Obfuscator");
+////////////////////////////// SPRITE-OBFUSCATOR //////////////////////////////
 foreach (UndertaleSprite obj in Data.Sprites)
 {
     char[] chars =
@@ -64,7 +100,7 @@ foreach (UndertaleSprite obj in Data.Sprites)
     }
     obj.Name.Content = result.ToString();
 }
-
+////////////////////////////// ROOM-OBFUSCATOR //////////////////////////////
 MessageBox.Show("Obfuscating ROOM NAMES","Kades Obfuscator");
 foreach (UndertaleRoom obj in Data.Rooms)
 {
@@ -82,7 +118,7 @@ foreach (UndertaleRoom obj in Data.Rooms)
     }
     obj.Name.Content = result.ToString();
 }
-
+////////////////////////////// OBJECT-OBFUSCATOR //////////////////////////////
 MessageBox.Show("Obfuscating OBJECTS","Kades Obfuscator");
 
 foreach (UndertaleGameObject obj in Data.GameObjects)
@@ -844,11 +880,11 @@ switch(rnd.Next(1,5))
 }
 obj.EventHandlerFor(EventType.Step, (uint)0, Data.Strings, Data.Code, Data.CodeLocals).Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(code, null ), Data));
 }
-
+////////////////////////////// JUNKER //////////////////////////////
 MessageBox.Show("Adding JUNK...","Kades Obfuscator");
 int i = 0;
 
-while(i != 500)
+while(i != ammountOfJunk)
 {
     char[] chars =
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
@@ -1627,7 +1663,6 @@ junk.EventHandlerFor(EventType.Draw, (uint)0, Data.Strings, Data.Code, Data.Code
 junk.EventHandlerFor(EventType.Step, (uint)0, Data.Strings, Data.Code, Data.CodeLocals).Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(codeJ, null ), Data));
 }
 MessageBox.Show("Obfuscated.","Kades Obfuscator");
-
+////////////////////////////// Compile shit again :) //////////////////////////////
 UndertaleModLib.Compiler.Compiler.SetUndertaleData(Data);
-}
 }
