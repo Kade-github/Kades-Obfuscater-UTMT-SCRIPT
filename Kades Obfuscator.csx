@@ -1,1668 +1,322 @@
 ///-----------------------------------------------------------------
-///						        Kades Obfuscator
+///     K A D E S  O B F U S C A T O R  2 . 0
 ///-----------------------------------------------------------------
-///   Author:         Kade
+///   Author:  Kade
 ///-----------------------------------------------------------------
-////////////////////////////// IMPORTS //////////////////////////////
-using System.Security.Cryptography;
-using System.Text;
-using System.Net;
+#region Imports
 using System.Windows.Forms;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Drawing;
-using System.Windows.Controls;
+using UndertaleModLib;
 using System.Linq;
+using System.Diagnostics;
+using System.IO;
+using System; 
+#endregion
 
-// VERSION dont change this shit
-string ver = "1.2";
+string log = "[KO V2 loaded]\n";
 
-////////////////////////////// ADD THIS TO THE BEGINNING - COLINATOR27 //////////////////////////////
-UndertaleModLib.Compiler.Compiler.SetUndertaleData(Data);
+Dictionary<string, string> functions = new Dictionary<string, string>();
 
-// VERSION / NEWS CHECK //
+#region Methods
 
-if (!new WebClient().DownloadString("https://raw.githubusercontent.com/KadePcGames/Kades-Obfuscater-UTMT-SCRIPT/UTMT-Files/version").Contains(ver))
+// Rename Method
+int renamerCount = 0;
+
+string GML_UNDEFINED = "&lt;undefined&gt;";
+
+enum LogType
 {
-	MessageBox.Show("Updating!","Kades Obfuscator");
-	new WebClient().DownloadFile("https://raw.githubusercontent.com/KadePcGames/Kades-Obfuscater-UTMT-SCRIPT/UTMT-Files/file","script.csx");
-	MessageBox.Show("Please run script.csx in the folder were this data.win is located!","Kades Obfuscator");
-}
-else
-{
-    // Get News //
-string news = new WebClient().DownloadString("https://raw.githubusercontent.com/KadePcGames/Kades-Obfuscater-UTMT-SCRIPT/UTMT-Files/news");
-    // Make the form //
-            Form f = new Form();
-            f.Text = "Kades Obfuscator Script UI";
-            f.FormBorderStyle = FormBorderStyle.None;
-            f.StartPosition = FormStartPosition.CenterScreen;
-            f.Size = new System.Drawing.Size(250, 150);
-            f.TopMost = true;
-            System.Windows.Forms.RichTextBox NewsBox = new System.Windows.Forms.RichTextBox();
-            System.Windows.Forms.Button Obfuscate = new System.Windows.Forms.Button();
-            System.Windows.Forms.TextBox Junk = new System.Windows.Forms.TextBox();
-            System.Windows.Forms.Label JunkText = new System.Windows.Forms.Label();
-            Obfuscate.Text = "Obfuscate!";
-            Obfuscate.Click += new EventHandler(delegate (Object o, EventArgs a)
-            {
-                f.Close();
-            });
-            JunkText.Text = "The ammount of junk:";
-            Obfuscate.FlatStyle = FlatStyle.Flat;
-            f.Controls.Add(NewsBox);
-            f.Controls.Add(JunkText);
-            f.Controls.Add(Obfuscate);
-            f.Controls.Add(Junk);
-            NewsBox.Text = news;
-            NewsBox.ReadOnly = true;
-            NewsBox.Size = new System.Drawing.Size(250, 50);
-            Junk.Size = new System.Drawing.Size(145, 50);
-            Junk.Text = "500";
-            JunkText.Size = new System.Drawing.Size(200, 20);
-            JunkText.Location = new System.Drawing.Point(55, 55);
-            Junk.Location = new System.Drawing.Point(45, 75);
-            Obfuscate.Location = new System.Drawing.Point(75, 100);
-            f.ShowDialog();
-            int ammountOfJunk = int.Parse(Junk.Text);
-MessageBox.Show("Started obfuscator.","Kades Obfuscator");
-// GMS CHECK //
-
-var gms = 0;
-
-foreach (UndertaleGameObject obj in Data.GameObjects)
-{
-	if (obj.Name.Content == "GMS")
-		gms = 1;
+    Log,
+    Warn,
+    Error
 }
 
-if (gms == 1)
-	MessageBox.Show("GMS Detected!\nJust note that GMS is a little weird, the obfuscation can stop it from working.\nKeep that in mind while using it!","Kades Obfuscator");
+void Log(string text, LogType lg)
+{
+    log += "[" + lg.ToString() + "] " + text + "\n";
+}
 
-// GMS CHECK //
-
-MessageBox.Show("Obfuscating SPRITE NAMES","Kades Obfuscator");
-////////////////////////////// SPRITE-OBFUSCATOR //////////////////////////////
-foreach (UndertaleSprite obj in Data.Sprites)
+string Renamer()
 {
-    char[] chars =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
-    byte[] data = new byte[40];
-    using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
-    {
-        crypto.GetBytes(data);
-    }
-    StringBuilder result = new StringBuilder(40);
-    foreach (byte b in data)
-    {
-                result.Append(chars[b % (chars.Length)]);
-    }
-    obj.Name.Content = result.ToString();
-}
-////////////////////////////// ROOM-OBFUSCATOR //////////////////////////////
-MessageBox.Show("Obfuscating ROOM NAMES","Kades Obfuscator");
-foreach (UndertaleRoom obj in Data.Rooms)
-{
-    char[] chars =
-       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
-    byte[] data = new byte[40];
-    using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
-    {
-        crypto.GetBytes(data);
-    }
-    StringBuilder result = new StringBuilder(40);
-    foreach (byte b in data)
-    {
-        result.Append(chars[b % (chars.Length)]);
-    }
-    obj.Name.Content = result.ToString();
-}
-////////////////////////////// OBJECT-OBFUSCATOR //////////////////////////////
-MessageBox.Show("Obfuscating OBJECTS","Kades Obfuscator");
-
-foreach (UndertaleGameObject obj in Data.GameObjects)
-{
-    char[] chars =
-                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
-            byte[] data = new byte[40];
-            using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
-            {
-                crypto.GetBytes(data);
-            }
-            StringBuilder result = new StringBuilder(40);
-            foreach (byte b in data)
-            {
-                result.Append(chars[b % (chars.Length)]);
-            }
-            Random rnd = new Random();
-	    obj.Name.Content = result.ToString();
-    string code = "";
-switch(rnd.Next(1,5))
-{
-    case 1:
-        code = @"
-        var a = 025126512;
-        a+=25215125;
-        var b = 2512512;
-        var c = 259192895912512
-        var bab = 295901259012950129501295
-        if a = 2512512
-        {
-            a++
-        }
-        bab++
-        c++
-        if (bab == c)
-        {
-            c = 25125;
-        }
-        bab = 512512512;";
-    break;
-    case 2:
-        code = @"
-        var aa = 25129568129;
-        var bba = 259120512;
-        var ar;
-        i = 0;
-        ar[i] = 2512512;
-        if (ar[0] = 2512512)
-        {
-            bba++;
-        }
-        aa++;
-        bab = 512512512;
-        if (bab == ar[0] || aa == ar[0])
-        {
-            ar[0] = bab + aa;
-        }
-        ";
-    break;
-    case 3:
-        code = @"
-        var array = 0
-        array[0]++;
-        array[1]++;
-        array[2]++;
-        array[3]++;
-        array[4]++;
-        array[5]++;
-        array[6]++;
-        array[7]++;
-        array[8]++;
-        array[9]++;
-        array[10]++;
-        if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                switch (arrag[10)
-                                                {
-                                                    case 1:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 2:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 3:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                }
-            
-        ";
-        break;
-        case 4:
-            code = @"
-            var superStistion = 0;
-            superStistion++;
-            superStistion--;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;  
-            ";
-        break;
-        case 5:
-        // Alot of them 
-                        code = @"
-                                var aa = 25129568129;
-        var bba = 259120512;
-        var ar;
-        i = 0;
-        ar[i] = 2512512;
-        if (ar[0] = 2512512)
-        {
-            bba++;
-        }
-        aa++;
-        bab = 512512512;
-        if (bab == ar[0] || aa == ar[0])
-        {
-            ar[0] = bab + aa;
-        }
-                                var array = 0
-        array[0]++;
-        array[1]++;
-        array[2]++;
-        array[3]++;
-        array[4]++;
-        array[5]++;
-        array[6]++;
-        array[7]++;
-        array[8]++;
-        array[9]++;
-        array[10]++;
-        if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                switch (arrag[10)
-                                                {
-                                                    case 1:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 2:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 3:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                }
-            var superStistion = 0;
-            superStistion++;
-            superStistion--;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;  
-            ";
-        break;
-}
-obj.EventHandlerFor(EventType.Create, (uint)0, Data.Strings, Data.Code, Data.CodeLocals).Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(code, null ), Data));
-switch(rnd.Next(1,5))
-{
-    case 1:
-        code = @"
-        var a = 025126512;
-        a+=25215125;
-        var b = 2512512;
-        var c = 259192895912512
-        var bab = 295901259012950129501295
-        if a = 2512512
-        {
-            a++
-        }
-        bab++
-        c++
-        if (bab == c)
-        {
-            c = 25125;
-        }
-        bab = 512512512;";
-    break;
-    case 2:
-        code = @"
-        var aa = 25129568129;
-        var bba = 259120512;
-        var ar;
-        i = 0;
-        ar[i] = 2512512;
-        if (ar[0] = 2512512)
-        {
-            bba++;
-        }
-        aa++;
-        bab = 512512512;
-        if (bab == ar[0] || aa == ar[0])
-        {
-            ar[0] = bab + aa;
-        }
-        ";
-    break;
-    case 3:
-        code = @"
-        var array = 0
-        array[0]++;
-        array[1]++;
-        array[2]++;
-        array[3]++;
-        array[4]++;
-        array[5]++;
-        array[6]++;
-        array[7]++;
-        array[8]++;
-        array[9]++;
-        array[10]++;
-        if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                switch (arrag[10)
-                                                {
-                                                    case 1:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 2:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 3:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                }
-            
-        ";
-        break;
-        case 4:
-            code = @"
-            var superStistion = 0;
-            superStistion++;
-            superStistion--;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;  
-            ";
-        break;
-        case 5:
-        // Alot of them 
-                        code = @"
-                                var aa = 25129568129;
-        var bba = 259120512;
-        var ar;
-        i = 0;
-        ar[i] = 2512512;
-        if (ar[0] = 2512512)
-        {
-            bba++;
-        }
-        aa++;
-        bab = 512512512;
-        if (bab == ar[0] || aa == ar[0])
-        {
-            ar[0] = bab + aa;
-        }
-                                var array = 0
-        array[0]++;
-        array[1]++;
-        array[2]++;
-        array[3]++;
-        array[4]++;
-        array[5]++;
-        array[6]++;
-        array[7]++;
-        array[8]++;
-        array[9]++;
-        array[10]++;
-        if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                switch (arrag[10)
-                                                {
-                                                    case 1:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 2:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 3:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                }
-            var superStistion = 0;
-            superStistion++;
-            superStistion--;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;  
-            ";
-        break;
-}
-obj.EventHandlerFor(EventType.Draw, (uint)0, Data.Strings, Data.Code, Data.CodeLocals).Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(code, null ), Data));
-switch(rnd.Next(1,5))
-{
-    case 1:
-        code = @"
-        var a = 025126512;
-        a+=25215125;
-        var b = 2512512;
-        var c = 259192895912512
-        var bab = 295901259012950129501295
-        if a = 2512512
-        {
-            a++
-        }
-        bab++
-        c++
-        if (bab == c)
-        {
-            c = 25125;
-        }
-        bab = 512512512;";
-    break;
-    case 2:
-        code = @"
-        var aa = 25129568129;
-        var bba = 259120512;
-        var ar;
-        i = 0;
-        ar[i] = 2512512;
-        if (ar[0] = 2512512)
-        {
-            bba++;
-        }
-        aa++;
-        bab = 512512512;
-        if (bab == ar[0] || aa == ar[0])
-        {
-            ar[0] = bab + aa;
-        }
-        ";
-    break;
-    case 3:
-        code = @"
-        var array = 0
-        array[0]++;
-        array[1]++;
-        array[2]++;
-        array[3]++;
-        array[4]++;
-        array[5]++;
-        array[6]++;
-        array[7]++;
-        array[8]++;
-        array[9]++;
-        array[10]++;
-        if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                switch (arrag[10)
-                                                {
-                                                    case 1:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 2:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 3:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                }
-            
-        ";
-        break;
-        case 4:
-            code = @"
-            var superStistion = 0;
-            superStistion++;
-            superStistion--;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;  
-            ";
-        break;
-        case 5:
-        // Alot of them 
-                        code = @"
-                                var aa = 25129568129;
-        var bba = 259120512;
-        var ar;
-        i = 0;
-        ar[i] = 2512512;
-        if (ar[0] = 2512512)
-        {
-            bba++;
-        }
-        aa++;
-        bab = 512512512;
-        if (bab == ar[0] || aa == ar[0])
-        {
-            ar[0] = bab + aa;
-        }
-                                var array = 0
-        array[0]++;
-        array[1]++;
-        array[2]++;
-        array[3]++;
-        array[4]++;
-        array[5]++;
-        array[6]++;
-        array[7]++;
-        array[8]++;
-        array[9]++;
-        array[10]++;
-        if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                switch (arrag[10)
-                                                {
-                                                    case 1:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 2:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 3:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                }
-            var superStistion = 0;
-            superStistion++;
-            superStistion--;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;  
-            ";
-        break;
-}
-obj.EventHandlerFor(EventType.Step, (uint)0, Data.Strings, Data.Code, Data.CodeLocals).Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(code, null ), Data));
-}
-////////////////////////////// JUNKER //////////////////////////////
-MessageBox.Show("Adding JUNK...","Kades Obfuscator");
-int i = 0;
-
-while(i != ammountOfJunk)
-{
-    char[] chars =
-            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
-    byte[] data = new byte[40];
-    using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
-    {
-        crypto.GetBytes(data);
-    }
-    StringBuilder result = new StringBuilder(40);
-    foreach (byte b in data)
-    {
-        result.Append(chars[b % (chars.Length)]);
-    }
-	i++;
-	var junk = new UndertaleGameObject()
-    {
-    Name = Data.Strings.MakeString(result.ToString()),
-    Visible = true,
-    Solid = true,
-    Depth = 0,
-    Persistent = true,
-    UsesPhysics = true,
-    IsSensor = true,
-    Density = (float)0.5,
-    Restitution = (float)0.1,
-    Group = 0,
-    LinearDamping = (float)0.1,
-    AngularDamping = (float)0.1,
-    Friction = (float)0.2,
-    Awake = true,
-    Kinematic = true,
-    };
-    Data.GameObjects.Add(junk);
-    string codeJ = "";
+    renamerCount++;
     Random rnd = new Random();
-    switch(rnd.Next(1,5))
+    return @"KOu" + renamerCount + rnd.Next(100,1000);
+}
+
+string RenamerNumber()
 {
-    case 1:
-        codeJ = @"
-        var a = 025126512;
-        a+=25215125;
-        var b = 2512512;
-        var c = 259192895912512
-        var bab = 295901259012950129501295
-        if a = 2512512
-        {
-            a++
-        }
-        bab++
-        c++
-        if (bab == c)
-        {
-            c = 25125;
-        }
-        bab = 512512512;";
-    break;
-    case 2:
-        codeJ = @"
-        var aa = 25129568129;
-        var bba = 259120512;
-        var ar;
-        i = 0;
-        ar[i] = 2512512;
-        if (ar[0] = 2512512)
-        {
-            bba++;
-        }
-        aa++;
-        bab = 512512512;
-        if (bab == ar[0] || aa == ar[0])
-        {
-            ar[0] = bab + aa;
-        }
-        ";
-    break;
-    case 3:
-        codeJ = @"
-        var array = 0
-        array[0]++;
-        array[1]++;
-        array[2]++;
-        array[3]++;
-        array[4]++;
-        array[5]++;
-        array[6]++;
-        array[7]++;
-        array[8]++;
-        array[9]++;
-        array[10]++;
-        if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                switch (arrag[10)
-                                                {
-                                                    case 1:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 2:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 3:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                }
-            
-        ";
-        break;
-        case 4:
-            codeJ = @"
-            var superStistion = 0;
-            superStistion++;
-            superStistion--;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;  
-            ";
-        break;
-        case 5:
-        // Alot of them 
-                        codeJ = @"
-                                var aa = 25129568129;
-        var bba = 259120512;
-        var ar;
-        i = 0;
-        ar[i] = 2512512;
-        if (ar[0] = 2512512)
-        {
-            bba++;
-        }
-        aa++;
-        bab = 512512512;
-        if (bab == ar[0] || aa == ar[0])
-        {
-            ar[0] = bab + aa;
-        }
-                                var array = 0
-        array[0]++;
-        array[1]++;
-        array[2]++;
-        array[3]++;
-        array[4]++;
-        array[5]++;
-        array[6]++;
-        array[7]++;
-        array[8]++;
-        array[9]++;
-        array[10]++;
-        if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                switch (arrag[10)
-                                                {
-                                                    case 1:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 2:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 3:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                }
-            var superStistion = 0;
-            superStistion++;
-            superStistion--;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;  
-            ";
-        break;
+    renamerCount++;
+    return @"0" + renamerCount + "2" + renamerCount + "25";
 }
-junk.EventHandlerFor(EventType.Create, (uint)0, Data.Strings, Data.Code, Data.CodeLocals).Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(codeJ, null ), Data));
-    switch(rnd.Next(1,5))
+
+// MessageBox Method because F U N K
+
+void Message(string text)
 {
-    case 1:
-        codeJ = @"
-        var a = 025126512;
-        a+=25215125;
-        var b = 2512512;
-        var c = 259192895912512
-        var bab = 295901259012950129501295
-        if a = 2512512
-        {
-            a++
-        }
-        bab++
-        c++
-        if (bab == c)
-        {
-            c = 25125;
-        }
-        bab = 512512512;";
-    break;
-    case 2:
-        codeJ = @"
-        var aa = 25129568129;
-        var bba = 259120512;
-        var ar;
-        i = 0;
-        ar[i] = 2512512;
-        if (ar[0] = 2512512)
-        {
-            bba++;
-        }
-        aa++;
-        bab = 512512512;
-        if (bab == ar[0] || aa == ar[0])
-        {
-            ar[0] = bab + aa;
-        }
-        ";
-    break;
-    case 3:
-        codeJ = @"
-        var array = 0
-        array[0]++;
-        array[1]++;
-        array[2]++;
-        array[3]++;
-        array[4]++;
-        array[5]++;
-        array[6]++;
-        array[7]++;
-        array[8]++;
-        array[9]++;
-        array[10]++;
-        if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                switch (arrag[10)
-                                                {
-                                                    case 1:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 2:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 3:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                }
-            
-        ";
-        break;
-        case 4:
-            codeJ = @"
-            var superStistion = 0;
-            superStistion++;
-            superStistion--;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;  
-            ";
-        break;
-        case 5:
-        // Alot of them 
-                        codeJ = @"
-                                var aa = 25129568129;
-        var bba = 259120512;
-        var ar;
-        i = 0;
-        ar[i] = 2512512;
-        if (ar[0] = 2512512)
-        {
-            bba++;
-        }
-        aa++;
-        bab = 512512512;
-        if (bab == ar[0] || aa == ar[0])
-        {
-            ar[0] = bab + aa;
-        }
-                                var array = 0
-        array[0]++;
-        array[1]++;
-        array[2]++;
-        array[3]++;
-        array[4]++;
-        array[5]++;
-        array[6]++;
-        array[7]++;
-        array[8]++;
-        array[9]++;
-        array[10]++;
-        if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                switch (arrag[10)
-                                                {
-                                                    case 1:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 2:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 3:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                }
-            var superStistion = 0;
-            superStistion++;
-            superStistion--;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;  
-            ";
-        break;
+    MessageBox.Show(text,"---- Kades Obfuscator 2.0 ----");
 }
-junk.EventHandlerFor(EventType.Draw, (uint)0, Data.Strings, Data.Code, Data.CodeLocals).Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(codeJ, null ), Data));
-    switch(rnd.Next(1,5))
+
+UndertaleCodeLocals FindLocal(string localName)
 {
-    case 1:
-        codeJ = @"
-        var a = 025126512;
-        a+=25215125;
-        var b = 2512512;
-        var c = 259192895912512
-        var bab = 295901259012950129501295
-        if a = 2512512
-        {
-            a++
-        }
-        bab++
-        c++
-        if (bab == c)
-        {
-            c = 25125;
-        }
-        bab = 512512512;";
-    break;
-    case 2:
-        codeJ = @"
-        var aa = 25129568129;
-        var bba = 259120512;
-        var ar;
-        i = 0;
-        ar[i] = 2512512;
-        if (ar[0] = 2512512)
-        {
-            bba++;
-        }
-        aa++;
-        bab = 512512512;
-        if (bab == ar[0] || aa == ar[0])
-        {
-            ar[0] = bab + aa;
-        }
-        ";
-    break;
-    case 3:
-        codeJ = @"
-        var array = 0
-        array[0]++;
-        array[1]++;
-        array[2]++;
-        array[3]++;
-        array[4]++;
-        array[5]++;
-        array[6]++;
-        array[7]++;
-        array[8]++;
-        array[9]++;
-        array[10]++;
-        if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                switch (arrag[10)
-                                                {
-                                                    case 1:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 2:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 3:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                }
-            
-        ";
-        break;
-        case 4:
-            codeJ = @"
-            var superStistion = 0;
-            superStistion++;
-            superStistion--;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;  
-            ";
-        break;
-        case 5:
-        // Alot of them 
-                        codeJ = @"
-                                var aa = 25129568129;
-        var bba = 259120512;
-        var ar;
-        i = 0;
-        ar[i] = 2512512;
-        if (ar[0] = 2512512)
-        {
-            bba++;
-        }
-        aa++;
-        bab = 512512512;
-        if (bab == ar[0] || aa == ar[0])
-        {
-            ar[0] = bab + aa;
-        }
-                                var array = 0
-        array[0]++;
-        array[1]++;
-        array[2]++;
-        array[3]++;
-        array[4]++;
-        array[5]++;
-        array[6]++;
-        array[7]++;
-        array[8]++;
-        array[9]++;
-        array[10]++;
-        if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                switch (arrag[10)
-                                                {
-                                                    case 1:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 2:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                    case 3:
-                                                       if (array[1] == 10)
-            if (array[2] == 421)
-                if (array[3] == 5215)
-                    if (array[4] == 521512)
-                        if (array[5] == 52)
-                            if (array[6] == 521512)
-                                if (array[7] == -512512)
-                                    if (array[8] == 2512512)
-                                        if (array[9] == 20)
-                                            if (array[10] == 25125)
-                                                    break;
-                                                }
-            var superStistion = 0;
-            superStistion++;
-            superStistion--;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;
-            if (superStistion > 0 && superStistion == 0 && superStistion < 0 )
-                superStistion = 900000;
-            if (superStistion = 900000)
-                superStistion = 0;  
-            ";
-        break;
+    UndertaleCodeLocals local = null;
+    foreach (UndertaleCodeLocals lcl in Data.CodeLocals)
+    {
+        if (lcl.Name.Content == localName)
+            local = lcl;
+    }
+    return local;
 }
-junk.EventHandlerFor(EventType.Step, (uint)0, Data.Strings, Data.Code, Data.CodeLocals).Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(codeJ, null ), Data));
+
+void AddFunction(string functionName, string scriptCode)
+{
+    try
+    {
+    string nameA = "";
+    UndertaleCode code;
+    UndertaleCodeLocals codeLocals;
+    UndertaleScript script;
+    nameA = Renamer();
+    // Locals from what i herd are debug info? So just keep em lol.
+    codeLocals = new UndertaleCodeLocals(){Name = Data.Strings.MakeString("gml_Script_" + nameA),};
+    Data.CodeLocals.Add(codeLocals);
+    // Add the code because its a tab for som reason.
+    code = new UndertaleCode()
+    {
+        Name = Data.Strings.MakeString("gml_Script_" + nameA),
+    };
+    // The actuall script code lol...
+    script = new UndertaleScript()
+    {
+        Name = Data.Strings.MakeString(nameA),
+        Code = code,
+    };
+    script.Code.Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(scriptCode, Data, script.Code).ResultAssembly, Data));
+    // Add em all.
+    Data.Scripts.Add(script);
+    Data.Code.Add(code);
+    // Add it to the dictonary.
+    functions.Add(functionName,nameA);
+    Log("Added " + functionName, LogType.Log);
+    }
+    catch (Exception ee)
+    {
+        Log("Failed to add " + functionName + " as a function, exception: " + ee.Message, LogType.Warn);
+    }
 }
-MessageBox.Show("Obfuscated.","Kades Obfuscator");
-////////////////////////////// Compile shit again :) //////////////////////////////
-UndertaleModLib.Compiler.Compiler.SetUndertaleData(Data);
+#endregion
+Message("Begining obfuscation...");
+Log("Sprites", LogType.Log);
+#region Sprites
+foreach(UndertaleSprite spr in Data.Sprites)
+{
+    // Not much you can do with sprites other then rename them.
+    spr.Name.Content = Renamer();
 }
+#endregion
+
+Log("Scripts", LogType.Log);
+
+#region Scripts
+foreach(UndertaleScript scr in Data.Scripts)
+{
+    if (!scr.Name.Content.Contains("gms")) // GMS Check
+    {
+        Log("Passed GMS Check for " + scr.Name.Content);
+        string orginalName = scr.Name.Content;
+        string nameRRR = Renamer();
+        scr.Name.Content = nameRRR;
+        // Code locals because dab
+        var codeLocalsBeforeAgain = new UndertaleCodeLocals(){Name = Data.Strings.MakeString(nameRRR),};
+        scr.Code.Name = Data.Strings.MakeString(nameRRR);
+        Data.CodeLocals.Add(codeLocalsBeforeAgain);
+        Data.CodeLocals.Remove(FindLocal(orginalName)); // Gotta delete it so they dont know the name to the object >:)
+    }
+}
+#endregion
+
+Log("Functions", LogType.Log);
+
+#region Functions
+
+foreach (UndertaleFunction func in Data.Functions)
+{
+    string nameA = "";
+    UndertaleCode code;
+    UndertaleCodeLocals codeLocals;
+    UndertaleScript script;
+    string var = "";
+    int number = 0;
+    switch (func.Name.Content)
+    {
+        case "keyboard_check":
+            var = Renamer();
+            number = int.Parse(RenamerNumber());
+            AddFunction("keyboard_check",$@"
+            var {var} = argument0;
+            switch(keyboard_check({var}))
+            " + "{" + $@"
+            case true:
+                {var} = false;
+                return true;
+                break;
+            case false:
+                {var} = true;
+                return false;
+                break;
+            ");
+        break;
+        case "audio_exists":
+            AddFunction("audio_exists", "return audio_exists(argument0);");
+        break;
+        case "audio_stop_sound":
+            AddFunction("audio_stop_sound", "audio_stop_sound(argument0);");
+        break;
+        case "instance_create":
+            AddFunction("instance_create","instance_create(argument0,argument1,argument3);");
+        break;
+        case "room_goto":
+            AddFunction("room_goto","room_goto(argument0);");
+        break;
+        case "place_free":
+            AddFunction("place_free","return place_free(argument0, argument1);");
+        break;
+        case "audio_play_sound":
+            AddFunction("audio_play_sound","audio_play_sound(argument0,argument1,argument2);");
+        break;
+        case "keyboard_check_pressed":
+            AddFunction("keyboard_check_pressed", "return keyboard_check_pressed(argument0);");
+        break;
+        case "keyboard_check_direct":
+            AddFunction("keyboard_check_direct", "return keyboard_check_direct(argument0);");
+        break;
+        case "place_meeting":
+            AddFunction("place_meeting", "return place_meeting(argument0,argument1,argument2);");
+        break;
+        case "draw_set_valign":
+            AddFunction("draw_set_valign", "draw_set_valign(argument0);");
+        break;
+        case "draw_set_halign":
+            AddFunction("draw_set_halign", "draw_set_halign(argument0);");
+        break;
+        case "point_direction":
+            AddFunction("point_direction", "point_direction(argument0, argument1, argument2, argument3");
+        break;
+        case "alarm_set":
+            AddFunction("alarm_set", "alarm_set(argument0,argument1);");
+        break;
+        case "instance_destroy":
+            AddFunction("instance_destroy",$@"
+            if argument_count = 1
+                instance_destroy(argument0);
+            else if argument_count = 2
+                instance_destroy(argument0,argument1);
+            else
+                instance_destroy();
+            ");
+        break;
+        case "draw_text":
+            AddFunction("draw_text", "draw_text(argument0, argument1, argument2);");
+        break;
+        case "draw_set_font":
+            AddFunction("draw_set_font", "draw_set_font(argument0);");
+        break;
+        case "draw_text_ext":
+            AddFunction("draw_text_ext", "draw_text_ext(argument0,argument1,argument2,argument3);");
+        break;
+        case "draw_text_colour":
+            AddFunction("draw_text_colour", "draw_text_colour(argument0,argument1,argument2,argument3,argument4,argument5,argument6,argument7);");
+        break;
+        case "draw_set_color":
+            AddFunction("draw_set_color", "draw_set_color(argument0);");
+        break;
+        case "random_range":
+            AddFunction("random_range", "return random_range(argument0,argument1);");
+        break;
+    }
+}
+#endregion
+Log("Function list", LogType.Log);
+foreach (string func in functions.Keys)
+{
+    Log(func, LogType.Log);
+}
+Log("End Function list", LogType.Log);
+Log("Objects", LogType.Log);
+
+#region Objects
+foreach (UndertaleGameObject obj in Data.GameObjects)
+{
+    string nameAA = Renamer();
+    // Renamer
+    obj.Name.Content = nameAA;
+    for (var i = 0; i < obj.Events.Count; i++) {
+    {
+        var eventType = (int) (UndertaleModLib.Models.EventType) i;
+        foreach (var evt in obj.Events[i])
+        {
+            foreach(UndertaleGameObject.EventAction evA in evt.Actions)
+            {
+                string[] code = UndertaleModLib.Decompiler.Decompiler.Decompile(evA.CodeId, new UndertaleModLib.Decompiler.DecompileContext(Data,true)).Split('\n');
+                string newCode = "";
+                // Search for functions
+                foreach (string line in code)
+                {
+                    string newLine = "";
+                    foreach (string func in functions.Keys)
+                    {
+                        Regex rgx = new Regex(func);
+                        if (rgx.IsMatch(line))
+                        {
+                            Log("Replaced " + func + " with " + functions[func], LogType.Log);
+                            newLine = line.Replace(func,functions[func]);
+                        }
+                        else
+                            newLine = line;
+                    }
+                    newCode += newLine + "\n";
+                }
+                // Renamer x2 lol
+                string orginalName = evA.CodeId.Name.Content;
+                string rName = evA.CodeId.Name.Content.Replace(obj.Name.Content,nameAA);
+                // Code locals A G A I N
+                var codeLocalsAgain = new UndertaleCodeLocals(){Name = Data.Strings.MakeString(rName),};
+                // Replace em all. and make it look good :)
+                evA.CodeId.Name = Data.Strings.MakeString(rName);
+                evA.CodeId.Replace(Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(newCode,Data,evA.CodeId).ResultAssembly, Data));
+                // And of course clean up :)
+                Data.CodeLocals.Add(codeLocalsAgain);
+                Data.CodeLocals.Remove(FindLocal(orginalName)); // Gotta delete it so they dont know the name to the object >:)
+            }
+        }
+    }
+}
+}
+#endregion
+
+Log("Rooms", LogType.Log);
+
+#region Rooms
+foreach (UndertaleRoom rm in Data.Rooms)
+{
+    rm.Name.Content = Renamer();
+}
+#endregion
+
+Log("Metadata", LogType.Log);
+
+#region Metadata/whaterver
+Data.GeneralInfo.LastObj = 1;
+Data.GeneralInfo.LastTile = 1;
+Data.GeneralInfo.DebuggerPort = 1;
+
+Data.GeneralInfo.Config = Data.Strings.MakeString(Renamer());
+
+Data.GeneralInfo.Name = Data.Strings.MakeString(Renamer());
+
+Data.GeneralInfo.Filename = Data.Strings.MakeString(Renamer());
+#endregion
+
+File.WriteAllText("KO.Log", log);
+Process.Start("KO.Log");
+Message("Complete!");
+ChangeSelection(GML_UNDEFINED + "- Protection Complete! -" + GML_UNDEFINED);
