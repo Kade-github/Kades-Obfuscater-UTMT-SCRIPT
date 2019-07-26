@@ -121,7 +121,7 @@ foreach(UndertaleScript scr in Data.Scripts)
 {
     if (!scr.Name.Content.Contains("gms")) // GMS Check
     {
-        Log("Passed GMS Check for " + scr.Name.Content);
+        Log("Passed GMS Check for " + scr.Name.Content, LogType.Log);
         string orginalName = scr.Name.Content;
         string nameRRR = Renamer();
         scr.Name.Content = nameRRR;
