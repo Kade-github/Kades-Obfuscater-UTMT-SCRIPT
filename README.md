@@ -22,3 +22,4 @@ https://github.com/KadePcGames/Kades-Obfuscater-UTMT-SCRIPT/releases/latest
 ## Credits
 - Colinator27 (Helped me a lot in the mess of things x2)
 - Kade (The Creator)
+- The UTMT Team for creating such a great tool!
