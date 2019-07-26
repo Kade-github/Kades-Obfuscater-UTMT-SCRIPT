@@ -15,9 +15,10 @@ https://github.com/KadePcGames/Kades-Obfuscater-UTMT-SCRIPT/releases/latest
 
 ## Features
 - Rename
-- Junk Code
-- More to come!
+- Functions Rename
+- CodeId Replacer
+- API, Modify this to your will to make your own modded version!
 
 ## Credits
-- Colinator27 (Helped me a lot in the mess of things)
+- Colinator27 (Helped me a lot in the mess of things x2)
 - Kade (The Creator)
