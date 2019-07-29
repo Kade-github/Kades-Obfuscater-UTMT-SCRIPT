@@ -14,7 +14,6 @@ using System;
 #endregion
 
 string log = "[KO V2 loaded]\n";
-
 Dictionary<string, string> functions = new Dictionary<string, string>();
 
 #region Methods
@@ -105,7 +104,7 @@ void AddFunction(string functionName, string scriptCode)
 }
 #endregion
 Message("Begining obfuscation...");
-Log("Sprites", LogType.Log);
+Log("--- Sprites", LogType.Log);
 #region Sprites
 foreach(UndertaleSprite spr in Data.Sprites)
 {
@@ -114,7 +113,7 @@ foreach(UndertaleSprite spr in Data.Sprites)
 }
 #endregion
 
-Log("Scripts", LogType.Log);
+Log("--- Scripts", LogType.Log);
 
 #region Scripts
 foreach(UndertaleScript scr in Data.Scripts)
@@ -134,7 +133,7 @@ foreach(UndertaleScript scr in Data.Scripts)
 }
 #endregion
 
-Log("Functions", LogType.Log);
+Log("--- Functions", LogType.Log);
 
 #region Functions
 
@@ -149,88 +148,136 @@ foreach (UndertaleFunction func in Data.Functions)
     switch (func.Name.Content)
     {
         case "keyboard_check":
-            var = Renamer();
-            number = int.Parse(RenamerNumber());
             AddFunction("keyboard_check",$@"
-            var {var} = argument0;
-            switch(keyboard_check({var}))
-            " + "{" + $@"
-            case true:
-                {var} = false;
-                return true;
-                break;
-            case false:
-                {var} = true;
-                return false;
-                break;
-            ");
+            var cappa = argument0;
+            return keyboard_check(argument0);");
         break;
         case "audio_exists":
-            AddFunction("audio_exists", "return audio_exists(argument0);");
+            AddFunction("audio_exists", $@"
+            var cappa = argument0;return audio_exists(argument0);");
         break;
         case "audio_stop_sound":
-            AddFunction("audio_stop_sound", "audio_stop_sound(argument0);");
+            AddFunction("audio_stop_sound", $@"
+            var cappa = argument0;audio_stop_sound(argument0);");
         break;
         case "instance_create":
-            AddFunction("instance_create","instance_create(argument0,argument1,argument3);");
+            AddFunction("instance_create",$@"
+            var cappa = argument0;
+            cappa = argument1;
+            cappa = argument2;
+            instance_create(argument0,argument1,argument3);");
         break;
         case "room_goto":
-            AddFunction("room_goto","room_goto(argument0);");
+            AddFunction("room_goto",$@"
+            var cappa = argument0;
+            room_goto(argument0);");
         break;
         case "place_free":
-            AddFunction("place_free","return place_free(argument0, argument1);");
+            AddFunction("place_free",$@"
+            var cappa = argument0;
+            cappa = argument1;
+            return place_free(argument0, argument1);");
         break;
         case "audio_play_sound":
-            AddFunction("audio_play_sound","audio_play_sound(argument0,argument1,argument2);");
+            AddFunction("audio_play_sound",$@"
+            var cappa = argument0;
+            cappa = argument1;
+            cappa = argument2;
+            audio_play_sound(argument0,argument1,argument2);");
         break;
         case "keyboard_check_pressed":
-            AddFunction("keyboard_check_pressed", "return keyboard_check_pressed(argument0);");
+            AddFunction("keyboard_check_pressed", $@"
+            var cappa = argument0;
+            return keyboard_check_pressed(argument0);");
         break;
         case "keyboard_check_direct":
-            AddFunction("keyboard_check_direct", "return keyboard_check_direct(argument0);");
+            AddFunction("keyboard_check_direct", $@"
+            var cappa = argument0;
+            return keyboard_check_direct(argument0);");
         break;
         case "place_meeting":
-            AddFunction("place_meeting", "return place_meeting(argument0,argument1,argument2);");
+            AddFunction("place_meeting", $@"
+            var cappa = argument0;
+            cappa = argument1;
+            cappa = argument2;
+            return place_meeting(argument0,argument1,argument2);");
         break;
         case "draw_set_valign":
-            AddFunction("draw_set_valign", "draw_set_valign(argument0);");
+            AddFunction("draw_set_valign", $@"
+            var cappa = argument0;
+            draw_set_valign(argument0);");
         break;
         case "draw_set_halign":
-            AddFunction("draw_set_halign", "draw_set_halign(argument0);");
+            AddFunction("draw_set_halign", $@"
+            var cappa = argument0;
+            draw_set_halign(argument0);");
         break;
         case "point_direction":
-            AddFunction("point_direction", "point_direction(argument0, argument1, argument2, argument3");
+            AddFunction("point_direction", $@"
+            var cappa = argument0;
+            cappa = argument1;
+            cappa = argument2;
+            cappa = argument3;
+            point_direction(argument0, argument1, argument2, argument3");
         break;
         case "alarm_set":
-            AddFunction("alarm_set", "alarm_set(argument0,argument1);");
+            AddFunction("alarm_set", $@"
+            var cappa = argument0;
+            cappa = argument1;
+            alarm_set(argument0,argument1);");
         break;
         case "instance_destroy":
             AddFunction("instance_destroy",$@"
-            if argument_count = 1
+            if (argument_count = 1)
                 instance_destroy(argument0);
-            else if argument_count = 2
+            else if (argument_count = 2)
                 instance_destroy(argument0,argument1);
             else
                 instance_destroy();
             ");
         break;
         case "draw_text":
-            AddFunction("draw_text", "draw_text(argument0, argument1, argument2);");
+            AddFunction("draw_text", $@"
+            var cappa = argument0;
+            cappa = argument1;
+            cappa = argument2;
+            draw_text(argument0,argument1,argument2);");
         break;
         case "draw_set_font":
-            AddFunction("draw_set_font", "draw_set_font(argument0);");
+            AddFunction("draw_set_font", $@"
+            var cappa = argument0;
+            draw_set_font(argument0);");
         break;
         case "draw_text_ext":
-            AddFunction("draw_text_ext", "draw_text_ext(argument0,argument1,argument2,argument3);");
+            AddFunction("draw_text_ext", $@"
+            var cappa = argument0;
+            cappa = argument1;
+            cappa = argument2;
+            cappa = argument3;
+            draw_text_ext(argument0,argument1,argument2,argument3);");
         break;
         case "draw_text_colour":
-            AddFunction("draw_text_colour", "draw_text_colour(argument0,argument1,argument2,argument3,argument4,argument5,argument6,argument7);");
+            AddFunction("draw_text_colour", $@"
+            var cappa = argument0;
+            cappa = argument1;
+            cappa = argument2;
+            cappa = argument3;
+            cappa = argument4;
+            cappa = argument5;
+            cappa = argument6;
+            cappa = argument7;
+            draw_text_colour(argument0,argument1,argument2,argument3,argument4,argument5,argument6,argument7);");
         break;
         case "draw_set_color":
-            AddFunction("draw_set_color", "draw_set_color(argument0);");
+            AddFunction("draw_set_color", $@"
+            var cappa = argument0;
+            draw_set_color(argument0);");
         break;
         case "random_range":
-            AddFunction("random_range", "return random_range(argument0,argument1);");
+            AddFunction("random_range", $@"
+            var cappa = argument0;
+            cappa = argument1;
+            return random_range(argument0,argument1);");
         break;
     }
 }
@@ -241,11 +288,14 @@ foreach (string func in functions.Keys)
     Log(func, LogType.Log);
 }
 Log("End Function list", LogType.Log);
-Log("Objects", LogType.Log);
+Log("--- Objects", LogType.Log);
+
+List<UndertaleGameObject> objectsToRecomp = new List<UndertaleGameObject>();
 
 #region Objects
 foreach (UndertaleGameObject obj in Data.GameObjects)
 {
+    bool recomp = false;
     string nameAA = Renamer();
     // Renamer
     obj.Name.Content = nameAA;
@@ -262,17 +312,22 @@ foreach (UndertaleGameObject obj in Data.GameObjects)
                 foreach (string line in code)
                 {
                     string newLine = "";
+                    string lastFunc= "none|none";
                     foreach (string func in functions.Keys)
                     {
-                        Regex rgx = new Regex(func);
-                        if (rgx.IsMatch(line))
+                        if (line.Contains(func))
                         {
-                            Log("Replaced " + func + " with " + functions[func], LogType.Log);
-                            newLine = line.Replace(func,functions[func]);
+                            newLine = line.Replace(func, functions[func]);
+                            lastFunc = func + "|" + line.Replace(func, functions[func]);
+                            recomp = true;
                         }
                         else
-                            newLine = line;
+                            if (line.Contains(lastFunc.Split('|')[0]))
+                                newLine = lastFunc.Split('|')[1];
+                            else
+                                newLine = line;
                     }
+                    Log("Newline: " + newLine, LogType.Log);
                     newCode += newLine + "\n";
                 }
                 // Renamer x2 lol
@@ -281,19 +336,40 @@ foreach (UndertaleGameObject obj in Data.GameObjects)
                 // Code locals A G A I N
                 var codeLocalsAgain = new UndertaleCodeLocals(){Name = Data.Strings.MakeString(rName),};
                 // Replace em all. and make it look good :)
+                try
+                {
+                if (newCode.Contains("@6") && !newCode.Contains('"' + "@6" + '"'))
+                    newCode = newCode.Replace("@6","");
+                Log("Adding new code:\n```\n" + newCode + "\n```\nFor " + orginalName, LogType.Log);
+                evA.CodeId.Replace(Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(newCode, Data, evA.CodeId).ResultAssembly, Data));
                 evA.CodeId.Name = Data.Strings.MakeString(rName);
-                evA.CodeId.Replace(Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(newCode,Data,evA.CodeId).ResultAssembly, Data));
+                }
+                catch (Exception ee)
+                {
+                    Log("Failed on " + orginalName + ", displaying error.", LogType.Error);
+                    Message("Failed on " + orginalName + " check KO.Log for a reason for this: " + ee.Message);
+                    File.WriteAllText("KO.Log",log);
+                    return;
+                }
                 // And of course clean up :)
                 Data.CodeLocals.Add(codeLocalsAgain);
                 Data.CodeLocals.Remove(FindLocal(orginalName)); // Gotta delete it so they dont know the name to the object >:)
+                if (recomp)
+                    objectsToRecomp.Add(obj);
             }
         }
     }
 }
 }
+
+foreach (UndertaleGameObject obj in objectsToRecomp)
+{
+    Data.GameObjects.Remove(obj);
+    Data.GameObjects.Add(obj);
+}
 #endregion
 
-Log("Rooms", LogType.Log);
+Log("--- Rooms", LogType.Log);
 
 #region Rooms
 foreach (UndertaleRoom rm in Data.Rooms)
@@ -302,7 +378,7 @@ foreach (UndertaleRoom rm in Data.Rooms)
 }
 #endregion
 
-Log("Metadata", LogType.Log);
+Log("--- Metadata", LogType.Log);
 
 #region Metadata/whaterver
 Data.GeneralInfo.LastObj = 1;
