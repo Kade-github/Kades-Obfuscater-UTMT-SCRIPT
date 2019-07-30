@@ -15,6 +15,7 @@ https://github.com/KadePcGames/Kades-Obfuscater-UTMT-SCRIPT/releases/latest
 
 ## Features
 - Rename
+- String encryption/cypher
 - Functions Rename
 - CodeId Replacer
 - API, Modify this to your will to make your own modded version!
