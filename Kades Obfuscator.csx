@@ -450,43 +450,6 @@ foreach(UndertaleScript scr in Data.Scripts)
         scr.Code.Name = Data.Strings.MakeString(nameRRR);
         Data.CodeLocals.Add(codeLocalsBeforeAgain);
         Data.CodeLocals.Remove(FindLocal(orginalName)); // Gotta delete it so they dont know the name to the object >:)
-        if (encryptName != "failedToAdd")
-        {
-            string[] code = UndertaleModLib.Decompiler.Decompiler.Decompile(scr.Code, new UndertaleModLib.Decompiler.DecompileContext(Data,true)).Split('\n');
-            string newCode = "";
-            foreach (string line in code)
-            {
-                string newLine = "";
-		string lastString = "";
-                foreach (UndertaleString strin in Data.Strings)
-                    {
-                        if (!FunctionContains(strin.Content) && !VariablesContains(strin.Content) && !CheckObjects(strin.Content,obj) && !CheckScripts(strin.Content,null) && obj.Name.Content != strin.Content)
-                        {
-                            if (newLine.Contains('"' + strin.Content + '"'))
-                            {
-                                if(strin.Content.Length != 0)
-                                {
-                                    lastString = strin.Content + "|" + newLine.Replace('"' + strin.Content + '"',encryptName + "(" + '"' + Encrypt(strin.Content) + '"' + ")");
-                                    newLine = line.Replace('"' + strin.Content + '"',encryptName + "(" + '"' + Encrypt(strin.Content) + '"' + ")");
-                                }
-                            }
-                            else
-                                if (newLine.Contains(lastString.Split('|')[0]))
-                                    newLine = lastString.Split('|')[1];
-                                else
-                                    newLine = line;
-                        }
-                        else
-                            if (newLine.Contains(lastString.Split('|')[0]))
-                                newLine = lastString.Split('|')[1];
-                            else
-                                newLine = line;
-                    }
-                newCode += newLine + "\n";
-            }
-        }
-        if (recomp)
-            scriptsToRecomp.Add(scr);
     }
 }
 #endregion
