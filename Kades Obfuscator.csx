@@ -740,6 +740,39 @@ foreach (UndertaleRoom rm in Data.Rooms)
 }
 #endregion
 
+Message("Misc Stuff");
+
+Log("--- Misc stuff", LogType.Log);
+
+#region Paths/Shaders/Audio/Backgrounds/Timelines
+
+foreach (UndertaleTimline tim in Data.Timelines)
+{
+    tim.Name.Content = Renamer();
+}
+
+foreach (UndertalePath path in Data.Paths)
+{
+    path.Name.Content = Renamer();
+}
+
+foreach (UndertaleShader shad in Data.Shaders)
+{
+    shad.Name.Content = Renamer();
+}
+
+foreach (UndertaleSound audio in Data.Sounds)
+{
+    audio.Name.Content = Renamer();
+}
+
+foreach (UndertaleBackground bg in Data.Backgrounds)
+{
+    bg.Name.Content = Renamer();
+}
+
+#endregion
+
 Log("--- Metadata", LogType.Log);
 ScriptMessage("Metadata");
 #region Metadata/whaterver
