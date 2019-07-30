@@ -66,6 +66,323 @@ UndertaleCodeLocals FindLocal(string localName)
     return local;
 }
 
+// No decrpytion method, im not doin work for you >:)
+
+string Encrypt(string text)
+{
+    string newText = "";
+    for (int i = 0; i < text.Length; i++)
+    {
+        switch (text[i].ToString())
+        {
+            case "a":
+                newText += "p";
+            break;
+            case "b":
+                newText += "a";
+            break;
+            case "c":
+                newText += "o";
+            break;
+            case "d":
+                newText += "l";
+            break;
+            case "e":
+                newText += "c";
+            break;
+            case "f":
+                newText += "k";
+            break;
+            case "g":
+                newText += "h";
+            break;
+            case "i":
+                newText += "q";
+            break;
+            case "j":
+                newText += "s";
+            break;
+            case "k":
+                newText += "j";
+            break;
+            case "l":
+                newText += "f";
+            break;
+            case "m":
+                newText += "n";
+            break;
+            case "n":
+                newText += "v";
+            break;
+            case "o":
+                newText += "z";
+            break;
+            case "p":
+                newText += "x";
+            break;
+            case "q":
+                newText += "r";
+            break;
+            case "r":
+                newText += "1";
+            break;
+            case "s":
+                newText += "5";
+            break;
+            case "t":
+                newText += "3";
+            break;
+            case "u":
+                newText += "2";
+            break;
+            case "v":
+                newText += "9";
+            break;
+            case "x":
+                newText += "4";
+            break;
+            case "z":
+                newText += "8";
+            break;
+            case "y":
+                newText += "7";
+            break;
+            case "1":
+                newText += "2";
+            break;
+            case "5":
+                newText += "6";
+            break;
+            case "3":
+                newText += "0";
+            break;
+            case "2":
+                newText += ".";
+            break;
+            case "9":
+                newText += "/";
+            break;
+            case "4":
+                newText += "`";
+            break;
+            case "7":
+                newText += ";";
+            break;
+            default:
+                newText += text[i];
+                break;
+        }
+    }
+    return newText;
+}
+
+bool CheckScripts(string Name, UndertaleScript currentScript)
+{
+    foreach (UndertaleScript scr in Data.Scripts)
+    {
+        if (scr != currentScript)
+        {
+            string code = UndertaleModLib.Decompiler.Decompiler.Decompile(scr.Code, new UndertaleModLib.Decompiler.DecompileContext(Data,true));
+            if (code.Contains(Name))
+                return true;
+            if (scr.Name.Content == Name)
+                return true;
+        }
+    }
+    return false;
+}
+
+bool CheckObjects(string Name, UndertaleGameObject currentObject)
+{
+    foreach (UndertaleGameObject obj in Data.GameObjects)
+    {
+        if (obj != currentObject)
+        {
+            for (var i = 0; i < obj.Events.Count; i++)
+            {
+                var eventType = (int) (UndertaleModLib.Models.EventType) i;
+                foreach (var evt in obj.Events[i])
+                {
+                    foreach(UndertaleGameObject.EventAction evA in evt.Actions)
+                    {
+                        string code = UndertaleModLib.Decompiler.Decompiler.Decompile(evA.CodeId, new UndertaleModLib.Decompiler.DecompileContext(Data,true));
+                        if (code.Contains(Name))
+                            return true;
+                    }
+                }
+            }
+            if (obj.Name.Content == Name)
+                return true;
+        }
+    }
+    return false;
+}
+
+bool FunctionContains(string Name)
+{
+    foreach (UndertaleFunction func in Data.Functions)
+    {
+        if (func.Name.Content == Name)
+            return true;
+    }
+    return false;
+}
+
+bool VariablesContains(string Name)
+{
+    foreach (UndertaleVariable var in Data.Variables)
+    {
+        if (var.Name.Content == Name)
+            return true;
+    }
+    return false;
+}
+
+string encryptName = "";
+
+void AddEncrypt()
+{
+    try
+    {
+    string nameA = "";
+    UndertaleCode code;
+    UndertaleCodeLocals codeLocals;
+    UndertaleScript script;
+    nameA = Renamer();
+    string var = Renamer();
+    // Locals from what i herd are debug info? So just keep em lol.
+    codeLocals = new UndertaleCodeLocals(){Name = Data.Strings.MakeString("gml_Script_" + nameA),};
+    Data.CodeLocals.Add(codeLocals);
+    // Add the code because its a tab for som reason.
+    code = new UndertaleCode()
+    {
+        Name = Data.Strings.MakeString("gml_Script_" + nameA),
+    };
+    // The actuall script code lol...
+    script = new UndertaleScript()
+    {
+        Name = Data.Strings.MakeString(nameA),
+        Code = code,
+    };
+    script.Code.Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText($@"
+    var {var} = " + '"' + '"' + $@";
+for(i=1;i<string_length(argument0)+1;i++)
+" + '{' + $@"
+  var {var}1 = string_char_at(argument0, i);
+        switch ({var}1)
+        " + '{' + $@"
+            case 'p':
+                {var} += 'a';
+            break;
+            case 'a':
+                {var} += 'b';
+            break;
+            case 'o':
+                {var} += 'c';
+            break;
+            case 'l':
+                {var} += 'd';
+            break;
+            case 'c':
+                {var} += 'e';
+            break;
+            case 'k':
+                {var} += 'f';
+            break;
+            case 'h':
+                {var} += 'g';
+            break;
+            case 'q':
+                {var} += 'i';
+            break;
+            case 's':
+                {var} += 'j';
+            break;
+            case 'j':
+                {var} += 'k';
+            break;
+            case 'f':
+                {var} += 'l';
+            break;
+            case 'n':
+                {var} += 'm';
+            break;
+            case 'v':
+                {var} += 'n';
+            break;
+            case 'z':
+                {var} += 'o';
+            break;
+            case 'x':
+                {var} += 'p';
+            break;
+            case 'r':
+                {var} += 'q';
+            break;
+            case '1':
+                {var} += 'r';
+            break;
+            case '5':
+                {var} += 's';
+            break;
+            case '3':
+                {var} += 't';
+            break;
+            case '2':
+                {var} += 'u';
+            break;
+            case '9':
+                {var} += 'v';
+            break;
+            case '4':
+                {var} += 'x';
+            break;
+            case '8':
+                {var} += 'z';
+            break;
+            case '7':
+                {var} += 'y';
+            break;
+            case '2':
+                {var} += '1';
+            break;
+            case '6':
+                {var} += '5';
+            break;
+            case '0':
+                {var} += '3';
+            break;
+            case '.':
+                {var} += '2';
+            break;
+            case '/':
+                {var} += '9';
+            break;
+            case '`':
+                {var} += '4';
+            break;
+            case ';':
+                {var} += '7';
+            break;
+            default:
+                {var} += {var}1;
+                break;
+        " + '}' + $@"
+" + '}' + $@"
+return {var};", Data, script.Code).ResultAssembly, Data));
+    // Add em all.
+    Data.Scripts.Add(script);
+    Data.Code.Add(code);
+    encryptName = script.Name.Content;
+    Log("Added encryption", LogType.Log);
+    }
+    catch (Exception ee)
+    {
+        Log("Failed to add encryption, exception: " + ee.Message, LogType.Warn);
+        encryptName = "failedToAdd";
+    }
+}
+
 void AddFunction(string functionName, string scriptCode)
 {
     try
@@ -106,6 +423,7 @@ void AddFunction(string functionName, string scriptCode)
 Message("Begining obfuscation...");
 Log("--- Sprites", LogType.Log);
 #region Sprites
+ScriptMessage("Sprites");
 foreach(UndertaleSprite spr in Data.Sprites)
 {
     // Not much you can do with sprites other then rename them.
@@ -114,12 +432,15 @@ foreach(UndertaleSprite spr in Data.Sprites)
 #endregion
 
 Log("--- Scripts", LogType.Log);
+List<UndertaleScript> scriptsToRecomp = new List<UndertaleScript>();
 
 #region Scripts
+ScriptMessage("Scripts");
 foreach(UndertaleScript scr in Data.Scripts)
 {
     if (!scr.Name.Content.Contains("gms")) // GMS Check
     {
+        bool recomp = false;
         Log("Passed GMS Check for " + scr.Name.Content, LogType.Log);
         string orginalName = scr.Name.Content;
         string nameRRR = Renamer();
@@ -129,14 +450,43 @@ foreach(UndertaleScript scr in Data.Scripts)
         scr.Code.Name = Data.Strings.MakeString(nameRRR);
         Data.CodeLocals.Add(codeLocalsBeforeAgain);
         Data.CodeLocals.Remove(FindLocal(orginalName)); // Gotta delete it so they dont know the name to the object >:)
+        if (encryptName != "failedToAdd")
+        {
+            string[] code = UndertaleModLib.Decompiler.Decompiler.Decompile(scr.Code, new UndertaleModLib.Decompiler.DecompileContext(Data,true)).Split('\n');
+            string newCode = "";
+            foreach (string line in code)
+            {
+                string newLine = "";
+                foreach (UndertaleString strin in Data.Strings)
+                    {
+                        if (!FunctionContains(strin.Content) && !VariablesContains(strin.Content))
+                        {
+                            if (newLine.Contains(strin.Content))
+                            {
+                                if(strin.Content.Length != 0)
+                                {
+                                    newLine = line.Replace(strin.Content,encryptName + "(" + '"' + Encrypt(strin.Content) + '"' + ")");
+                                }
+                            }
+                        }
+                    }
+                newCode += newLine + "\n";
+            }
+        }
+        if (recomp)
+            scriptsToRecomp.Add(scr);
     }
 }
 #endregion
 
+Log("--- Add Decryption method", LogType.Log);
+ScriptMessage("Encryption Script");
+AddEncrypt();
+
 Log("--- Functions", LogType.Log);
 
 #region Functions
-
+ScriptMessage("Functions");
 foreach (UndertaleFunction func in Data.Functions)
 {
     string nameA = "";
@@ -293,6 +643,7 @@ Log("--- Objects", LogType.Log);
 List<UndertaleGameObject> objectsToRecomp = new List<UndertaleGameObject>();
 
 #region Objects
+ScriptMessage("Objects");
 foreach (UndertaleGameObject obj in Data.GameObjects)
 {
     bool recomp = false;
@@ -311,6 +662,8 @@ foreach (UndertaleGameObject obj in Data.GameObjects)
                 // Search for functions
                 foreach (string line in code)
                 {
+                    try
+                    {
                     string newLine = "";
                     string lastFunc= "none|none";
                     foreach (string func in functions.Keys)
@@ -327,8 +680,41 @@ foreach (UndertaleGameObject obj in Data.GameObjects)
                             else
                                 newLine = line;
                     }
+                    string newNewLine = "";
+                    string lastString = "none|none";
+                    foreach (UndertaleString strin in Data.Strings)
+                    {
+                        if (!FunctionContains(strin.Content) && !VariablesContains(strin.Content) && !CheckObjects(strin.Content,obj) && !CheckScripts(strin.Content,null) && obj.Name.Content != strin.Content)
+                        {
+                            if (newLine.Contains('"' + strin.Content + '"'))
+                            {
+                                if(strin.Content.Length != 0)
+                                {
+                                    lastString = strin.Content + "|" + newLine.Replace('"' + strin.Content + '"',encryptName + "(" + '"' + Encrypt(strin.Content) + '"' + ")");
+                                    newNewLine = newLine.Replace('"' + strin.Content + '"',encryptName + "(" + '"' + Encrypt(strin.Content) + '"' + ")");
+                                }
+                            }
+                            else
+                                if (newLine.Contains(lastString.Split('|')[0]))
+                                    newNewLine = lastString.Split('|')[1];
+                                else
+                                    newNewLine = newLine;
+                        }
+                        else
+                            if (newLine.Contains(lastString.Split('|')[0]))
+                                newNewLine = lastString.Split('|')[1];
+                            else
+                                newNewLine = newLine;
+                    }
+                    Log("NewNewLine: " + newNewLine, LogType.Log);
                     Log("Newline: " + newLine, LogType.Log);
-                    newCode += newLine + "\n";
+                    newCode += newNewLine + "\n";
+                    }
+                    catch (Exception ee)
+                    {
+                        ScriptMessage("Failed on " + evA.CodeId.Name.Content + " Check log for details.");
+                        Log("Failed on " + evA.CodeId.Name.Content + " Exception: " + ee.Message, LogType.Warn);
+                    }
                 }
                 // Renamer x2 lol
                 string orginalName = evA.CodeId.Name.Content;
@@ -338,11 +724,11 @@ foreach (UndertaleGameObject obj in Data.GameObjects)
                 // Replace em all. and make it look good :)
                 try
                 {
-                if (newCode.Contains("@6") && !newCode.Contains('"' + "@6" + '"'))
-                    newCode = newCode.Replace("@6","");
-                Log("Adding new code:\n```\n" + newCode + "\n```\nFor " + orginalName, LogType.Log);
-                evA.CodeId.Replace(Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(newCode, Data, evA.CodeId).ResultAssembly, Data));
-                evA.CodeId.Name = Data.Strings.MakeString(rName);
+                    if (newCode.Contains("@6") && !newCode.Contains('"' + "@6" + '"'))
+                        newCode = newCode.Replace("@6","");
+                    Log("Adding new code:\n```\n" + newCode + "\n```\nFor " + orginalName, LogType.Log);
+                    evA.CodeId.Replace(Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(newCode, Data, evA.CodeId).ResultAssembly, Data));
+                    evA.CodeId.Name = Data.Strings.MakeString(rName);
                 }
                 catch (Exception ee)
                 {
@@ -372,6 +758,7 @@ foreach (UndertaleGameObject obj in objectsToRecomp)
 Log("--- Rooms", LogType.Log);
 
 #region Rooms
+ScriptMessage("Rooms");
 foreach (UndertaleRoom rm in Data.Rooms)
 {
     rm.Name.Content = Renamer();
@@ -379,7 +766,7 @@ foreach (UndertaleRoom rm in Data.Rooms)
 #endregion
 
 Log("--- Metadata", LogType.Log);
-
+ScriptMessage("Metadata");
 #region Metadata/whaterver
 Data.GeneralInfo.LastObj = 1;
 Data.GeneralInfo.LastTile = 1;
