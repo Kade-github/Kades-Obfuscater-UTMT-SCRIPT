@@ -457,18 +457,30 @@ foreach(UndertaleScript scr in Data.Scripts)
             foreach (string line in code)
             {
                 string newLine = "";
+		string lastString = "";
                 foreach (UndertaleString strin in Data.Strings)
                     {
-                        if (!FunctionContains(strin.Content) && !VariablesContains(strin.Content))
+                        if (!FunctionContains(strin.Content) && !VariablesContains(strin.Content) && !CheckObjects(strin.Content,obj) && !CheckScripts(strin.Content,null) && obj.Name.Content != strin.Content)
                         {
-                            if (newLine.Contains(strin.Content))
+                            if (newLine.Contains('"' + strin.Content + '"'))
                             {
                                 if(strin.Content.Length != 0)
                                 {
-                                    newLine = line.Replace(strin.Content,encryptName + "(" + '"' + Encrypt(strin.Content) + '"' + ")");
+                                    lastString = strin.Content + "|" + newLine.Replace('"' + strin.Content + '"',encryptName + "(" + '"' + Encrypt(strin.Content) + '"' + ")");
+                                    newLine = line.Replace('"' + strin.Content + '"',encryptName + "(" + '"' + Encrypt(strin.Content) + '"' + ")");
                                 }
                             }
+                            else
+                                if (newLine.Contains(lastString.Split('|')[0]))
+                                    newLine = lastString.Split('|')[1];
+                                else
+                                    newLine = line;
                         }
+                        else
+                            if (newLine.Contains(lastString.Split('|')[0]))
+                                newLine = lastString.Split('|')[1];
+                            else
+                                newLine = line;
                     }
                 newCode += newLine + "\n";
             }
