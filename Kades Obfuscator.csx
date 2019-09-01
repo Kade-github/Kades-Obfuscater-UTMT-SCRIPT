@@ -746,7 +746,7 @@ Log("--- Misc stuff", LogType.Log);
 
 #region Paths/Shaders/Audio/Backgrounds/Timelines
 
-foreach (UndertaleTimline tim in Data.Timelines)
+foreach (UndertaleTimeline tim in Data.Timelines)
 {
     tim.Name.Content = Renamer();
 }
