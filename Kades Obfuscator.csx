@@ -13,10 +13,16 @@ using System.IO;
 using System; 
 #endregion
 
+EnsureDataLoaded();
+
+bool encryption = ScriptQuestion("----- String encryption -----\nWhile string encrpytion is a lot better then most of the protections, it takes awhile on GIANT games.\nOr really any big game, with over 100+ objects.\nAgain waiting for it to finish is worth the wait time.\n\nDo you still want to use it?");
+
 string log = "[KO V2 loaded]\n";
 Dictionary<string, string> functions = new Dictionary<string, string>();
 
 #region Methods
+
+List<string> dataStrings = new List<string>();
 
 // Rename Method
 int renamerCount = 0;
@@ -48,6 +54,31 @@ string RenamerNumber()
     return @"0" + renamerCount + "2" + renamerCount + "25";
 }
 
+string currentDialog = "";
+int maxCount = 0;
+int saveProgress = 0;
+
+
+void SetupProgress(string name, int totalCount) {
+	currentDialog = name;
+	maxCount = totalCount;
+	saveProgress = 0;
+	UpdateProgressBar(null, currentDialog, saveProgress, maxCount);
+}
+
+void updateProgress()
+{
+    try
+    {
+    if (saveProgress < maxCount)
+		UpdateProgressBar(null, currentDialog, saveProgress++, maxCount);
+    }
+    catch (Exception e)
+    {
+        Log("Failed to update progress bar, "  + e.ToString(), LogType.Error);
+    }
+}
+
 // MessageBox Method because F U N K
 
 void Message(string text)
@@ -65,6 +96,47 @@ UndertaleCodeLocals FindLocal(string localName)
     }
     return local;
 }
+
+string getRandomJunk()
+{
+    switch (new Random().Next(1,10))
+    {
+        case 1:
+            return $@"
+            aaaa = 20291;
+aaa = " + '"' + @"for (int i = 0; i < argument0; i++){switch(case) { case1: return break; case2: return; case3 return case; case4 return case2; } " + '"' + @"
+cappap = 2552151212 * 0 - 0 + 99999002 * 00000;
+cappapp = 0;
+cappappp = 9241;
+switch (cappap){ case 0: break; case 1: game_end() break; case 2: return cappa-p break; }
+if (x < 0 && hspeed < 0) x = room_width;
+if (cappapp > room_width && hspeed > 0) x = -sprite_width;
+if (cappappp < 0 && vspeed < 0) y = room_height;
+if (cappappp > room_height && vspeed > 0) y = cappa-pp - room_height;
+var x1, y1, x2, y2, seen;
+x1 = lengthdir_x(1, image_angle);
+y1 = lengthdir_y(1, image_angle);
+x2 = 251- x;
+y2 = 52151 - y;
+if dot_product(x1, y1, x2, y2) > 0 seen=true else seen=false;
+if dot_product_normalised(x1, y1, x2, y2) > 0 seen=true else seen=false;
+x1 = 0;
+y1 = 1;
+z1 = 0;
+x2 = 5421- x;
+y2 = 11 - y;
+z2 = 521 - z; if dot_product_3d(x1, y1, z1, x2, y2, z2) > 0 above=true else above=false;
+var pd = point_direction(x, y, mouse_x, mouse_y);
+var dd = angle_difference(image_angle, pd);
+
+";
+        break;
+        default:
+            return "";
+        break;
+    }
+}
+
 
 // No decrpytion method, im not doin work for you >:)
 
@@ -387,32 +459,32 @@ void AddFunction(string functionName, string scriptCode)
 {
     try
     {
-    string nameA = "";
-    UndertaleCode code;
-    UndertaleCodeLocals codeLocals;
-    UndertaleScript script;
-    nameA = Renamer();
-    // Locals from what i herd are debug info? So just keep em lol.
-    codeLocals = new UndertaleCodeLocals(){Name = Data.Strings.MakeString("gml_Script_" + nameA),};
-    Data.CodeLocals.Add(codeLocals);
-    // Add the code because its a tab for som reason.
-    code = new UndertaleCode()
-    {
-        Name = Data.Strings.MakeString("gml_Script_" + nameA),
-    };
-    // The actuall script code lol...
-    script = new UndertaleScript()
-    {
-        Name = Data.Strings.MakeString(nameA),
-        Code = code,
-    };
-    script.Code.Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(scriptCode, Data, script.Code).ResultAssembly, Data));
-    // Add em all.
-    Data.Scripts.Add(script);
-    Data.Code.Add(code);
-    // Add it to the dictonary.
-    functions.Add(functionName,nameA);
-    Log("Added " + functionName, LogType.Log);
+        string nameA = "";
+        UndertaleCode code;
+        UndertaleCodeLocals codeLocals;
+        UndertaleScript script;
+        nameA = Renamer();
+        // Locals from what i herd are debug info? So just keep em lol.
+        codeLocals = new UndertaleCodeLocals(){Name = Data.Strings.MakeString("gml_Script_" + nameA),};
+        Data.CodeLocals.Add(codeLocals);
+        // Add the code because its a tab for som reason.
+        code = new UndertaleCode()
+        {
+            Name = Data.Strings.MakeString("gml_Script_" + nameA),
+        };
+        // The actuall script code lol...
+        script = new UndertaleScript()
+        {
+            Name = Data.Strings.MakeString(nameA),
+            Code = code,
+        };
+        script.Code.Append( Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(scriptCode, Data, script.Code).ResultAssembly, Data));
+        // Add em all.
+        Data.Scripts.Add(script);
+        Data.Code.Add(code);
+        // Add it to the dictonary.
+        functions.Add(functionName,nameA);
+        Log("Added " + functionName, LogType.Log);
     }
     catch (Exception ee)
     {
@@ -421,13 +493,67 @@ void AddFunction(string functionName, string scriptCode)
 }
 #endregion
 Message("Begining obfuscation...");
+
+List<string> nonRename = new List<string>();
+
+/* 
+    We are doing this because
+    If we don't, objects crash on big games.
+    While objects are still *slow* on big games,
+    they are much faster then just crashing.
+*/
+
+if (encryption)
+{
+    Log("Locate strings...", LogType.Log);
+    ScriptMessage("Gathering strings for string encryption (depending on game size, may take AWHILE.");
+    SetupProgress("Other strings (1)", Data.GameObjects.Count);
+    foreach (UndertaleGameObject obj in Data.GameObjects)
+    {
+        nonRename.Add(obj.Name.Content);
+        updateProgress();
+    }
+    SetupProgress("Other strings (2)", Data.Scripts.Count);
+    foreach (UndertaleScript obj in Data.Scripts)
+    {
+        nonRename.Add(obj.Name.Content);
+        updateProgress();
+    }
+    SetupProgress("Other strings (3)", Data.Variables.Count);
+    foreach (UndertaleVariable obj in Data.Variables)
+    {
+        nonRename.Add(obj.Name.Content);
+        updateProgress();
+    }
+    SetupProgress("Other strings (4)", Data.Functions.Count);
+    foreach (UndertaleFunction obj in Data.Functions)
+    {
+        nonRename.Add(obj.Name.Content);
+        updateProgress();
+    }
+    SetupProgress("Strings", Data.Strings.Count - nonRename.Count);
+    int max = Data.Strings.Count - nonRename.Count;
+    int ii = 0;
+    foreach (UndertaleString stringa in Data.Strings)
+    {
+        if (ii >= max) {}
+        else
+        {
+            if (!nonRename.Contains(stringa.Content))
+                dataStrings.Add(stringa.Content);
+            updateProgress();
+            ii++;
+        }
+    }
+}
 Log("--- Sprites", LogType.Log);
 #region Sprites
-ScriptMessage("Sprites");
+SetupProgress("Sprites", Data.Sprites.Count);
 foreach(UndertaleSprite spr in Data.Sprites)
 {
     // Not much you can do with sprites other then rename them.
     spr.Name.Content = Renamer();
+    updateProgress();
 }
 #endregion
 
@@ -435,35 +561,42 @@ Log("--- Scripts", LogType.Log);
 List<UndertaleScript> scriptsToRecomp = new List<UndertaleScript>();
 
 #region Scripts
-ScriptMessage("Scripts");
+SetupProgress("Scripts", Data.Scripts.Count);
 foreach(UndertaleScript scr in Data.Scripts)
 {
-    if (!scr.Name.Content.Contains("gms")) // GMS Check
+    try
     {
-        bool recomp = false;
-        Log("Passed GMS Check for " + scr.Name.Content, LogType.Log);
-        string orginalName = scr.Name.Content;
-        string nameRRR = Renamer();
-        scr.Name.Content = nameRRR;
-        // Code locals because dab
-        var codeLocalsBeforeAgain = new UndertaleCodeLocals(){Name = Data.Strings.MakeString(nameRRR),};
-        scr.Code.Name = Data.Strings.MakeString(nameRRR);
-        Data.CodeLocals.Add(codeLocalsBeforeAgain);
-        Data.CodeLocals.Remove(FindLocal(orginalName)); // Gotta delete it so they dont know the name to the object >:)
+        if (!scr.Name.Content.Contains("gms")) // GMS Check
+        {
+            string nameRRR = Renamer();
+            scr.Name.Content = nameRRR;
+        }
     }
+    catch (Exception e)
+    {
+        Log("Failed on " + scr.Name.Content + "\n[EXCEPTION] " + e.ToString(), LogType.Error);
+        ScriptMessage("Failed on script: " + scr.Name.Content + "\nException: " + e.ToString());
+        File.WriteAllText("KO.Log", log);
+        Process.Start("KO.Log");
+        return;
+    }
+    updateProgress();
 }
 #endregion
 
-Log("--- Add Decryption method", LogType.Log);
-ScriptMessage("Encryption Script");
-AddEncrypt();
+if (encryption)
+{
+    Log("--- Add Decryption method", LogType.Log);
+    AddEncrypt();
+}
 
 Log("--- Functions", LogType.Log);
 
 #region Functions
-ScriptMessage("Functions");
-foreach (UndertaleFunction func in Data.Functions)
+int functionCount = Data.Functions.Count;
+for (int iiii = 0; iiii < functionCount; iiii++)
 {
+    UndertaleFunction func = Data.Functions[iiii];
     string nameA = "";
     UndertaleCode code;
     UndertaleCodeLocals codeLocals;
@@ -473,116 +606,127 @@ foreach (UndertaleFunction func in Data.Functions)
     switch (func.Name.Content)
     {
         case "keyboard_check":
-            AddFunction("keyboard_check",$@"
+            AddFunction("keyboard_check",getRandomJunk() + $@"
             var cappa = argument0;
             return keyboard_check(argument0);");
         break;
         case "audio_exists":
-            AddFunction("audio_exists", $@"
+            AddFunction("audio_exists", getRandomJunk() + $@"
             var cappa = argument0;return audio_exists(argument0);");
         break;
         case "audio_stop_sound":
-            AddFunction("audio_stop_sound", $@"
-            var cappa = argument0;audio_stop_sound(argument0);");
+            AddFunction("audio_stop_sound", getRandomJunk() + $@"
+            var cappa = argument0;audio_stop_sound(argument0);
+            return;");
         break;
         case "instance_create":
-            AddFunction("instance_create",$@"
+            AddFunction("instance_create",getRandomJunk() + $@"
             var cappa = argument0;
             cappa = argument1;
             cappa = argument2;
-            instance_create(argument0,argument1,argument3);");
+            instance_create(argument0,argument1,argument3);
+            return;");
         break;
         case "room_goto":
-            AddFunction("room_goto",$@"
+            AddFunction("room_goto",getRandomJunk() + $@"
             var cappa = argument0;
-            room_goto(argument0);");
+            room_goto(argument0);
+            return;");
         break;
         case "place_free":
-            AddFunction("place_free",$@"
+            AddFunction("place_free",getRandomJunk() + $@"
             var cappa = argument0;
             cappa = argument1;
             return place_free(argument0, argument1);");
         break;
         case "audio_play_sound":
-            AddFunction("audio_play_sound",$@"
+            AddFunction("audio_play_sound",getRandomJunk() + $@"
             var cappa = argument0;
             cappa = argument1;
             cappa = argument2;
-            audio_play_sound(argument0,argument1,argument2);");
+            audio_play_sound(argument0,argument1,argument2);
+            return;");
         break;
         case "keyboard_check_pressed":
-            AddFunction("keyboard_check_pressed", $@"
+            AddFunction("keyboard_check_pressed", getRandomJunk() + $@"
             var cappa = argument0;
             return keyboard_check_pressed(argument0);");
         break;
         case "keyboard_check_direct":
-            AddFunction("keyboard_check_direct", $@"
+            AddFunction("keyboard_check_direct", getRandomJunk() + $@"
             var cappa = argument0;
             return keyboard_check_direct(argument0);");
         break;
         case "place_meeting":
-            AddFunction("place_meeting", $@"
+            AddFunction("place_meeting", getRandomJunk() + $@"
             var cappa = argument0;
             cappa = argument1;
             cappa = argument2;
             return place_meeting(argument0,argument1,argument2);");
         break;
         case "draw_set_valign":
-            AddFunction("draw_set_valign", $@"
+            AddFunction("draw_set_valign", getRandomJunk() + $@"
             var cappa = argument0;
-            draw_set_valign(argument0);");
+            draw_set_valign(argument0);
+            return;");
         break;
         case "draw_set_halign":
-            AddFunction("draw_set_halign", $@"
+            AddFunction("draw_set_halign", getRandomJunk() + $@"
             var cappa = argument0;
-            draw_set_halign(argument0);");
+            draw_set_halign(argument0);
+            return;");
         break;
         case "point_direction":
-            AddFunction("point_direction", $@"
+            AddFunction("point_direction", getRandomJunk() + $@"
             var cappa = argument0;
             cappa = argument1;
             cappa = argument2;
             cappa = argument3;
-            point_direction(argument0, argument1, argument2, argument3");
+            point_direction(argument0, argument1, argument2, argument3);
+            return;");
         break;
         case "alarm_set":
-            AddFunction("alarm_set", $@"
+            AddFunction("alarm_set", getRandomJunk() + $@"
             var cappa = argument0;
             cappa = argument1;
-            alarm_set(argument0,argument1);");
+            alarm_set(argument0,argument1);
+            return;");
         break;
         case "instance_destroy":
-            AddFunction("instance_destroy",$@"
+            AddFunction("instance_destroy",getRandomJunk() + $@"
             if (argument_count = 1)
                 instance_destroy(argument0);
             else if (argument_count = 2)
                 instance_destroy(argument0,argument1);
             else
                 instance_destroy();
-            ");
+            return;");
         break;
         case "draw_text":
-            AddFunction("draw_text", $@"
+            AddFunction("draw_text", getRandomJunk() + $@"
             var cappa = argument0;
             cappa = argument1;
             cappa = argument2;
-            draw_text(argument0,argument1,argument2);");
+            draw_text(argument0,argument1,argument2);
+            return;");
         break;
         case "draw_set_font":
-            AddFunction("draw_set_font", $@"
+            AddFunction("draw_set_font", getRandomJunk() + $@"
             var cappa = argument0;
-            draw_set_font(argument0);");
+            draw_set_font(argument0);
+            return;");
         break;
         case "draw_text_ext":
-            AddFunction("draw_text_ext", $@"
+            AddFunction("draw_text_ext", getRandomJunk() + $@"
             var cappa = argument0;
             cappa = argument1;
             cappa = argument2;
             cappa = argument3;
-            draw_text_ext(argument0,argument1,argument2,argument3);");
+            draw_text_ext(argument0,argument1,argument2,argument3);
+            return;");
         break;
         case "draw_text_colour":
-            AddFunction("draw_text_colour", $@"
+            AddFunction("draw_text_colour", getRandomJunk() + $@"
             var cappa = argument0;
             cappa = argument1;
             cappa = argument2;
@@ -591,18 +735,35 @@ foreach (UndertaleFunction func in Data.Functions)
             cappa = argument5;
             cappa = argument6;
             cappa = argument7;
-            draw_text_colour(argument0,argument1,argument2,argument3,argument4,argument5,argument6,argument7);");
+            draw_text_colour(argument0,argument1,argument2,argument3,argument4,argument5,argument6,argument7);
+            return;");
         break;
         case "draw_set_color":
-            AddFunction("draw_set_color", $@"
+            AddFunction("draw_set_color", getRandomJunk() + $@"
             var cappa = argument0;
-            draw_set_color(argument0);");
+            draw_set_color(argument0);
+            return;");
         break;
         case "random_range":
-            AddFunction("random_range", $@"
+            AddFunction("random_range", getRandomJunk() + $@"
             var cappa = argument0;
             cappa = argument1;
             return random_range(argument0,argument1);");
+        break;
+        case "irandom":
+            AddFunction("irandom", getRandomJunk() + $@"
+            var cappa = argument0;
+            return irandom(cappa);");
+        break;
+        case "array_length_1d":
+            AddFunction("array_length_1d", getRandomJunk() + $@"
+            var cappa = argument0;
+            return array_length_1d(cappa);");
+        break;
+        case "draw_self":
+            AddFunction("draw_self", getRandomJunk() + $@"
+            draw_self();
+            return;");
         break;
     }
 }
@@ -618,108 +779,117 @@ Log("--- Objects", LogType.Log);
 List<UndertaleGameObject> objectsToRecomp = new List<UndertaleGameObject>();
 
 #region Objects
-ScriptMessage("Objects");
+SetupProgress("Objects", Data.GameObjects.Count);
 foreach (UndertaleGameObject obj in Data.GameObjects)
 {
     bool recomp = false;
     string nameAA = Renamer();
     // Renamer
     obj.Name.Content = nameAA;
-    for (var i = 0; i < obj.Events.Count; i++) {
+    if (obj.Events.Count > 0)
     {
-        var eventType = (int) (UndertaleModLib.Models.EventType) i;
-        foreach (var evt in obj.Events[i])
+        for (var i = 0; i < obj.Events.Count; i++) {
         {
-            foreach(UndertaleGameObject.EventAction evA in evt.Actions)
+            var eventType = (int) (UndertaleModLib.Models.EventType) i;
+            foreach (var evt in obj.Events[i])
             {
-                string[] code = UndertaleModLib.Decompiler.Decompiler.Decompile(evA.CodeId, new UndertaleModLib.Decompiler.DecompileContext(Data,true)).Split('\n');
-                string newCode = "";
-                // Search for functions
-                foreach (string line in code)
+                foreach(UndertaleGameObject.EventAction evA in evt.Actions)
                 {
+                    string[] code = UndertaleModLib.Decompiler.Decompiler.Decompile(evA.CodeId, new UndertaleModLib.Decompiler.DecompileContext(Data,true)).Split('\n');
+                    string newCode = "";
+                    // Search for functions
+                    foreach (string line in code)
+                    {
+                        try
+                        {
+                            if (line.Contains("var"))
+                                continue;
+                            string newLine = "";
+                            string lastFunc= "none|none";
+                            foreach (string func in functions.Keys)
+                            {
+                                if (line.Contains(func))
+                                {
+                                    newLine = line.Replace(func, functions[func]);
+                                    lastFunc = func + "|" + line.Replace(func, functions[func]);
+                                    recomp = true;
+                                }
+                                else
+                                    if (line.Contains(lastFunc.Split('|')[0]))
+                                        newLine = lastFunc.Split('|')[1];
+                                    else
+                                        newLine = line;
+                            }
+                            if (!encryption)
+                                newCode += newLine + "\n";
+                            string newNewLine = "";
+                            string lastString = "none|none";
+                            if (encryption)
+                            {
+                                if (string.Join("\n", code).Contains('"'))
+                                {
+                                    SetupProgress("Encrypting strings for " + obj.Name.Content + ", event: " + i, dataStrings.Count);
+                                    foreach (string strin in dataStrings)
+                                    {
+                                        if (obj.Name.Content != strin)
+                                        {
+                                            if (newLine.Contains('"' + strin + '"'))
+                                            {
+                                                if(strin.Length != 0)
+                                                {
+                                                    lastString = strin + "|" + newLine.Replace('"' + strin + '"',encryptName + "(" + '"' + Encrypt(strin) + '"' + ")");
+                                                    newNewLine = newLine.Replace('"' + strin + '"',encryptName + "(" + '"' + Encrypt(strin) + '"' + ")");
+                                                }
+                                            }
+                                            else
+                                                if (newLine.Contains(lastString.Split('|')[0]))
+                                                    newNewLine = lastString.Split('|')[1];
+                                                else
+                                                    newNewLine = newLine;
+                                        }
+                                        else
+                                            if (newLine.Contains(lastString.Split('|')[0]))
+                                                newNewLine = lastString.Split('|')[1];
+                                            else
+                                                newNewLine = newLine;
+                                        updateProgress();
+                                    }
+                                }
+                                newCode += newNewLine + "\n";
+                            }
+                        }
+                        catch (Exception ee)
+                        {
+                            ScriptMessage("Failed on " + evA.CodeId.Name.Content + " Check log for details.");
+                            Log("Failed on " + evA.CodeId.Name.Content + " Exception: " + ee.Message, LogType.Warn);
+                        }
+                    }
+                    // Renamer x2 lol
+                    string orginalName = evA.CodeId.Name.Content;
+                    string rName = evA.CodeId.Name.Content.Replace(obj.Name.Content,nameAA);
+                    // Replace em all. and make it look good :)
                     try
                     {
-                    string newLine = "";
-                    string lastFunc= "none|none";
-                    foreach (string func in functions.Keys)
-                    {
-                        if (line.Contains(func))
-                        {
-                            newLine = line.Replace(func, functions[func]);
-                            lastFunc = func + "|" + line.Replace(func, functions[func]);
-                            recomp = true;
-                        }
-                        else
-                            if (line.Contains(lastFunc.Split('|')[0]))
-                                newLine = lastFunc.Split('|')[1];
-                            else
-                                newLine = line;
-                    }
-                    string newNewLine = "";
-                    string lastString = "none|none";
-                    foreach (UndertaleString strin in Data.Strings)
-                    {
-                        if (!FunctionContains(strin.Content) && !VariablesContains(strin.Content) && !CheckObjects(strin.Content,obj) && !CheckScripts(strin.Content,null) && obj.Name.Content != strin.Content)
-                        {
-                            if (newLine.Contains('"' + strin.Content + '"'))
-                            {
-                                if(strin.Content.Length != 0)
-                                {
-                                    lastString = strin.Content + "|" + newLine.Replace('"' + strin.Content + '"',encryptName + "(" + '"' + Encrypt(strin.Content) + '"' + ")");
-                                    newNewLine = newLine.Replace('"' + strin.Content + '"',encryptName + "(" + '"' + Encrypt(strin.Content) + '"' + ")");
-                                }
-                            }
-                            else
-                                if (newLine.Contains(lastString.Split('|')[0]))
-                                    newNewLine = lastString.Split('|')[1];
-                                else
-                                    newNewLine = newLine;
-                        }
-                        else
-                            if (newLine.Contains(lastString.Split('|')[0]))
-                                newNewLine = lastString.Split('|')[1];
-                            else
-                                newNewLine = newLine;
-                    }
-                    Log("NewNewLine: " + newNewLine, LogType.Log);
-                    Log("Newline: " + newLine, LogType.Log);
-                    newCode += newNewLine + "\n";
+                        if (newCode.Contains("@6") && !newCode.Contains('"' + "@6" + '"'))
+                            newCode = newCode.Replace("@6","");
+                        Log("Adding new code:\n```\n" + newCode + "\n```\nFor " + orginalName, LogType.Log);
+                        evA.CodeId.Replace(Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(newCode, Data, evA.CodeId).ResultAssembly, Data));
+                        evA.CodeId.Name = Data.Strings.MakeString(rName);
                     }
                     catch (Exception ee)
                     {
-                        ScriptMessage("Failed on " + evA.CodeId.Name.Content + " Check log for details.");
-                        Log("Failed on " + evA.CodeId.Name.Content + " Exception: " + ee.Message, LogType.Warn);
+                        Log("Failed on " + orginalName + ", displaying error.", LogType.Error);
+                        Message("Failed on " + orginalName + " check KO.Log for a reason for this: " + ee.Message);
+                        File.WriteAllText("KO.Log",log);
+                        return;
                     }
+                    if (recomp)
+                        objectsToRecomp.Add(obj);
                 }
-                // Renamer x2 lol
-                string orginalName = evA.CodeId.Name.Content;
-                string rName = evA.CodeId.Name.Content.Replace(obj.Name.Content,nameAA);
-                // Code locals A G A I N
-                var codeLocalsAgain = new UndertaleCodeLocals(){Name = Data.Strings.MakeString(rName),};
-                // Replace em all. and make it look good :)
-                try
-                {
-                    if (newCode.Contains("@6") && !newCode.Contains('"' + "@6" + '"'))
-                        newCode = newCode.Replace("@6","");
-                    Log("Adding new code:\n```\n" + newCode + "\n```\nFor " + orginalName, LogType.Log);
-                    evA.CodeId.Replace(Assembler.Assemble( UndertaleModLib.Compiler.Compiler.CompileGMLText(newCode, Data, evA.CodeId).ResultAssembly, Data));
-                    evA.CodeId.Name = Data.Strings.MakeString(rName);
-                }
-                catch (Exception ee)
-                {
-                    Log("Failed on " + orginalName + ", displaying error.", LogType.Error);
-                    Message("Failed on " + orginalName + " check KO.Log for a reason for this: " + ee.Message);
-                    File.WriteAllText("KO.Log",log);
-                    return;
-                }
-                // And of course clean up :)
-                Data.CodeLocals.Add(codeLocalsAgain);
-                Data.CodeLocals.Remove(FindLocal(orginalName)); // Gotta delete it so they dont know the name to the object >:)
-                if (recomp)
-                    objectsToRecomp.Add(obj);
             }
         }
     }
+    updateProgress();
 }
 }
 
@@ -733,14 +903,12 @@ foreach (UndertaleGameObject obj in objectsToRecomp)
 Log("--- Rooms", LogType.Log);
 
 #region Rooms
-ScriptMessage("Rooms");
+SetupProgress("Rooms", Data.Rooms.Count);
 foreach (UndertaleRoom rm in Data.Rooms)
 {
     rm.Name.Content = Renamer();
 }
 #endregion
-
-Message("Misc Stuff");
 
 Log("--- Misc stuff", LogType.Log);
 
@@ -769,12 +937,11 @@ foreach (UndertaleSound audio in Data.Sounds)
 foreach (UndertaleBackground bg in Data.Backgrounds)
 {
     bg.Name.Content = Renamer();
-}
+}Update
 
 #endregion
 
 Log("--- Metadata", LogType.Log);
-ScriptMessage("Metadata");
 #region Metadata/whaterver
 Data.GeneralInfo.LastObj = 1;
 Data.GeneralInfo.LastTile = 1;
