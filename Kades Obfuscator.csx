@@ -57,13 +57,14 @@ string RenamerNumber()
 string currentDialog = "";
 int maxCount = 0;
 int saveProgress = 0;
+string titl = "";
 
-
-void SetupProgress(string name, int totalCount) {
+void SetupProgress(string name, int totalCount, string title = "") {
 	currentDialog = name;
 	maxCount = totalCount;
 	saveProgress = 0;
-	UpdateProgressBar(null, currentDialog, saveProgress, maxCount);
+    titl = title;
+	UpdateProgressBar(title, currentDialog, saveProgress, maxCount);
 }
 
 void updateProgress()
@@ -71,7 +72,7 @@ void updateProgress()
     try
     {
     if (saveProgress < maxCount)
-		UpdateProgressBar(null, currentDialog, saveProgress++, maxCount);
+		UpdateProgressBar(titl, currentDialog, saveProgress++, maxCount);
     }
     catch (Exception e)
     {
@@ -507,31 +508,31 @@ if (encryption)
 {
     Log("Locate strings...", LogType.Log);
     ScriptMessage("Gathering strings for string encryption (depending on game size, may take AWHILE.");
-    SetupProgress("Other strings (1)", Data.GameObjects.Count);
+    SetupProgress("Other strings (1)", Data.GameObjects.Count, "Object strings... (Strings to not be included)");
     foreach (UndertaleGameObject obj in Data.GameObjects)
     {
         nonRename.Add(obj.Name.Content);
         updateProgress();
     }
-    SetupProgress("Other strings (2)", Data.Scripts.Count);
+    SetupProgress("Other strings (2)", Data.Scripts.Count, "Script strings... (Strings to not be included)");
     foreach (UndertaleScript obj in Data.Scripts)
     {
         nonRename.Add(obj.Name.Content);
         updateProgress();
     }
-    SetupProgress("Other strings (3)", Data.Variables.Count);
+    SetupProgress("Other strings (3)", Data.Variables.Count, "Variables... (Strings to not be included)");
     foreach (UndertaleVariable obj in Data.Variables)
     {
         nonRename.Add(obj.Name.Content);
         updateProgress();
     }
-    SetupProgress("Other strings (4)", Data.Functions.Count);
+    SetupProgress("Other strings (4)", Data.Functions.Count, "Functions... (Strings to not be included)");
     foreach (UndertaleFunction obj in Data.Functions)
     {
         nonRename.Add(obj.Name.Content);
         updateProgress();
     }
-    SetupProgress("Strings", Data.Strings.Count - nonRename.Count);
+    SetupProgress("Strings", Data.Strings.Count - nonRename.Count, "Actual strings... (Strings to be included!)");
     int max = Data.Strings.Count - nonRename.Count;
     int ii = 0;
     foreach (UndertaleString stringa in Data.Strings)
@@ -780,6 +781,7 @@ List<UndertaleGameObject> objectsToRecomp = new List<UndertaleGameObject>();
 
 #region Objects
 SetupProgress("Objects", Data.GameObjects.Count);
+int iii = 0;
 foreach (UndertaleGameObject obj in Data.GameObjects)
 {
     bool recomp = false;
@@ -797,6 +799,7 @@ foreach (UndertaleGameObject obj in Data.GameObjects)
                 {
                     string[] code = UndertaleModLib.Decompiler.Decompiler.Decompile(evA.CodeId, new UndertaleModLib.Decompiler.DecompileContext(Data,true)).Split('\n');
                     string newCode = "";
+                    string lastNewLine = "";
                     // Search for functions
                     foreach (string line in code)
                     {
@@ -822,41 +825,8 @@ foreach (UndertaleGameObject obj in Data.GameObjects)
                             }
                             if (!encryption)
                                 newCode += newLine + "\n";
-                            string newNewLine = "";
-                            string lastString = "none|none";
-                            if (encryption)
-                            {
-                                if (string.Join("\n", code).Contains('"'))
-                                {
-                                    SetupProgress("Encrypting strings for " + obj.Name.Content + ", event: " + i, dataStrings.Count);
-                                    foreach (string strin in dataStrings)
-                                    {
-                                        if (obj.Name.Content != strin)
-                                        {
-                                            if (newLine.Contains('"' + strin + '"'))
-                                            {
-                                                if(strin.Length != 0)
-                                                {
-                                                    lastString = strin + "|" + newLine.Replace('"' + strin + '"',encryptName + "(" + '"' + Encrypt(strin) + '"' + ")");
-                                                    newNewLine = newLine.Replace('"' + strin + '"',encryptName + "(" + '"' + Encrypt(strin) + '"' + ")");
-                                                }
-                                            }
-                                            else
-                                                if (newLine.Contains(lastString.Split('|')[0]))
-                                                    newNewLine = lastString.Split('|')[1];
-                                                else
-                                                    newNewLine = newLine;
-                                        }
-                                        else
-                                            if (newLine.Contains(lastString.Split('|')[0]))
-                                                newNewLine = lastString.Split('|')[1];
-                                            else
-                                                newNewLine = newLine;
-                                        updateProgress();
-                                    }
-                                }
-                                newCode += newNewLine + "\n";
-                            }
+
+                            lastNewLine = newLine;
                         }
                         catch (Exception ee)
                         {
@@ -867,6 +837,41 @@ foreach (UndertaleGameObject obj in Data.GameObjects)
                     // Renamer x2 lol
                     string orginalName = evA.CodeId.Name.Content;
                     string rName = evA.CodeId.Name.Content.Replace(obj.Name.Content,nameAA);
+                            if (encryption)
+                            {
+                                string newNewLine = "";
+                                string lastString = "none|none";
+                                if (string.Join("\n", code).Contains('"'))
+                                {
+                                    SetupProgress("Encrypting strings...", dataStrings.Count, "Object " + iii + "/" + Data.GameObjects.Count);
+                                    foreach (string strin in dataStrings)
+                                    {
+                                        if (obj.Name.Content != strin)
+                                        {
+                                            if (lastNewLine.Contains('"' + strin + '"'))
+                                            {
+                                                if(strin.Length != 0)
+                                                {
+                                                    lastString = strin + "|" + lastNewLine.Replace('"' + strin + '"',encryptName + "(" + '"' + Encrypt(strin) + '"' + ")");
+                                                    newNewLine = lastNewLine.Replace('"' + strin + '"',encryptName + "(" + '"' + Encrypt(strin) + '"' + ")");
+                                                }
+                                            }
+                                            else
+                                                if (lastNewLine.Contains(lastString.Split('|')[0]))
+                                                    newNewLine = lastString.Split('|')[1];
+                                                else
+                                                    newNewLine = lastNewLine;
+                                        }
+                                        else
+                                            if (lastNewLine.Contains(lastString.Split('|')[0]))
+                                                newNewLine = lastString.Split('|')[1];
+                                            else
+                                                newNewLine = lastNewLine;
+                                        updateProgress();
+                                    }
+                                }
+                                newCode += newNewLine + "\n";
+                            }
                     // Replace em all. and make it look good :)
                     try
                     {
@@ -890,6 +895,7 @@ foreach (UndertaleGameObject obj in Data.GameObjects)
         }
     }
     updateProgress();
+    iii++;
 }
 }
 
@@ -937,7 +943,7 @@ foreach (UndertaleSound audio in Data.Sounds)
 foreach (UndertaleBackground bg in Data.Backgrounds)
 {
     bg.Name.Content = Renamer();
-}Update
+}
 
 #endregion
 
