@@ -823,9 +823,7 @@ foreach (UndertaleGameObject obj in Data.GameObjects)
                                     else
                                         newLine = line;
                             }
-                            if (!encryption)
-                                newCode += newLine + "\n";
-
+                            newCode += newLine + "\n";
                             lastNewLine = newLine;
                         }
                         catch (Exception ee)
